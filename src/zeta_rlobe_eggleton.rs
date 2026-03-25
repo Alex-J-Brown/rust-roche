@@ -15,14 +15,14 @@ pub fn zeta_rlobe_eggleton(q: f64) -> f64 {
 }
 
 
-//
-// dzetadq_rlobe_eggleton returns d zeta / d q where zeta is the result 
-// of zeta_rlobe_eggleton(double q). This has been tested successfully
-// against finite difference value.
-//
-// \param q mass ratio = M2/M1
-// \return Returns d zeta d q
-//
+///
+/// dzetadq_rlobe_eggleton returns d zeta / d q where zeta is the result 
+/// of zeta_rlobe_eggleton(double q). This has been tested successfully
+/// against finite difference value.
+///
+/// \param q mass ratio = M2/M1
+/// \return Returns d zeta d q
+///
 pub fn dzetadq_rlobe_eggleton(q: f64) -> f64 {
     let q1 = q.powf(1./3.);
     let q2 = q1*q1;
