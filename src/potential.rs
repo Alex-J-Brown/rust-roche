@@ -7,13 +7,19 @@ use crate::{Vec3, Star};
 /// rpot_val computes the value of the Roche potential for a specific value of phi & lambda.
 /// phi refers to the orbital phase, lambda to a multiplier that specified the position
 /// of a point from an origin plus the multiplier time lambda.
-/// \param q mass ratio  = M2/M1
-/// \param star which star is relevant (for asynchronism)
-/// \param spin ratio spin to orbital frequency
-/// \param earth earth vector
-/// \param p position of origin (units of separation)
-/// \param lam multiplier
-/// \return Roche potential at point.
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `star`: which star (is relevant for asynchronism).
+/// * `spin`: ratio of spin to orbital frequency.
+/// * `earth`: vector towards earth (defined by phase and inclination).
+/// * `p`: position of origin (units of separation).
+/// * `lam`: multiplier.
+/// 
+/// Returns:
+/// 
+/// * Roche potential at point.
 ///
 pub fn rpot_val(q: f64, star: Star, spin: f64, earth: &Vec3, p: &Vec3, lam: f64) -> f64 {
 
@@ -29,15 +35,21 @@ pub fn rpot_val(q: f64, star: Star, spin: f64, earth: &Vec3, p: &Vec3, lam: f64)
 /// rpot_val_grad computes the value & gradient in phi, lambda space of the Roche potential.
 /// phi orbital phase, lambda a multiplier that specified the position
 /// of a point from an origin plus the multiplier times lambda.
-/// \param q mass ratio  = M2/M1
-/// \param star which star
-/// \param spin ratio spi/orbital frequency
-/// \param earth vector towards earth (defines by phase and inclination)
-/// \param p position of origin (units of separation)
-/// \param lam multiplier
-/// \param rpot the Roche potential
-/// \param dphi first derivative of Roche potential wrt phi
-/// \param dlam first derivative of Roche potential wrt lambda
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `star`: which star (is relevant for asynchronism).
+/// * `spin`: ratio of spin to orbital frequency.
+/// * `earth`: vector towards earth (defined by phase and inclination).
+/// * `p`: position of origin (units of separation).
+/// * `lam`: multiplier.
+/// 
+/// Returns:
+/// 
+/// * `rpot`: the Roche potential
+/// * `dphi`: first derivative of the Roche potential wrt phi
+/// * `dlam`: first derivative of the Roche potential wrt lambda
 ///
 pub fn rpot_val_grad(q: f64, star: Star, spin: f64, earth: &Vec3, p: &Vec3, lam: f64) -> (f64, f64, f64) {
 
@@ -62,17 +74,20 @@ pub fn rpot_val_grad(q: f64, star: Star, spin: f64, earth: &Vec3, p: &Vec3, lam:
 /// rpot_grad computes the gradient in phi, lambda space of the Roche potential.
 /// phi refers to the orbital phase, lambda to a multiplier that specified the position
 /// of a point from an origin plus the multiplier time lambda.
-/// \param q mass ratio  = M2/M1
-/// \param star which star is relevant (to allow for asynchronism)
-/// \param spin ratio of spin to orbital frequency
-/// \param cosi cosine of orbital inclination
-/// \param sini sine of orbital inclination
-/// \param iangle  the orbital inclination, degrees. 90 = edge on.
-/// \param p position of origin (units of separation)
-/// \param phi phase
-/// \param lam multiplier
-/// \param dphi first derivative of Roche potential wrt phi
-/// \param dlam first derivative of Roche potential wrt lamda
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `star`: which star (is relevant for asynchronism).
+/// * `spin`: ratio of spin to orbital frequency.
+/// * `earth`: vector towards earth (defined by phase and inclination).
+/// * `p`: position of origin (units of separation).
+/// * `lam`: multiplier.
+/// 
+/// Returns:
+/// 
+/// * `dphi`: first derivative of the Roche potential wrt phi
+/// * `dlam`: first derivative of the Roche potential wrt lambda
 ///
 pub fn rpot_grad(
     q: f64,
@@ -101,9 +116,15 @@ pub fn rpot_grad(
 
 ///
 /// rpot computes the Roche potential at a given point. This is for the standard synchronised Roche geometry
-/// \param q mass ratio = M2/M1
-/// \param p the point in question (units scaled by separation)
-/// \return the Roche potential.
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `p`: the point in question (units scaled by separation).
+/// 
+/// Returns:
+/// 
+/// * the Roche potential.
 ///
 pub fn rpot(q: f64, p: &Vec3) -> f64 {
     if q <= 0. {
@@ -122,10 +143,16 @@ pub fn rpot(q: f64, p: &Vec3) -> f64 {
 
 ///
 /// rpot1 computes the Roche potential at a given point allowing for non-synchronous rotation of the primary.
-/// \param q mass ratio = M2/M1
-/// \paran spin ratio spin/orbital frequencies
-/// \param p the point in question (units scaled by separation)
-/// \return the Roche potential.
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `spin`: ratio of spin to orbital frequency.
+/// * `p`: the point in question (units scaled by separation).
+/// 
+/// Returns:
+/// 
+/// * the Roche potential.
 ///
 pub fn rpot1(q: f64, spin: f64, p: &Vec3) -> f64 {
     if q <= 0. {
@@ -144,10 +171,16 @@ pub fn rpot1(q: f64, spin: f64, p: &Vec3) -> f64 {
 
 ///
 /// rpot2 computes the Roche potential at a given point allowing for non-synchronous rotation of the secondary.
-/// \param q mass ratio = M2/M1
-/// \paran spin ratio spin/orbital frequencies
-/// \param p the point in question (units scaled by separation)
-/// \return the Roche potential.
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `spin`: ratio of spin to orbital frequency.
+/// * `p`: the point in question (units scaled by separation).
+/// 
+/// Returns:
+/// 
+/// * the Roche potential.
 ///
 pub fn rpot2(q: f64, spin: f64, p: &Vec3) -> f64 {
     if q <= 0. {
@@ -167,8 +200,15 @@ pub fn rpot2(q: f64, spin: f64, p: &Vec3) -> f64 {
 ///
 /// drpot computes partial derivatives of Roche potential with respect
 /// to position at p for mass ratio q.
-/// \param q mass ratio  = M2/M1
-/// \param p position (units of separation)
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `p`: the point in question (units scaled by separation).
+/// 
+/// Returns:
+/// 
+/// * The partial derivative of the Roche potential wrt the position.
 ///
 pub fn drpot(q: f64, p: &Vec3) -> Vec3 {
     if q <= 0. {
@@ -188,10 +228,18 @@ pub fn drpot(q: f64, p: &Vec3) -> Vec3 {
 
 
 ///
-/// drpot computes partial derivatives of Roche potential with respect
+/// drpot1 computes partial derivatives of asynchronous Roche potential with respect
 /// to position at p for mass ratio q.
-/// \param q mass ratio  = M2/M1
-/// \param p position (units of separation)
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `spin`: ratio of spin to orbital frequency.
+/// * `p`: the point in question (units scaled by separation).
+/// 
+/// Returns:
+/// 
+/// * The partial derivative of the Roche potential wrt the position.
 ///
 pub fn drpot1(q: f64, spin: f64, p: &Vec3) -> Vec3 {
     if q <= 0. {
@@ -213,10 +261,17 @@ pub fn drpot1(q: f64, spin: f64, p: &Vec3) -> Vec3 {
 
 ///
 /// drpot2 computes partial derivatives of asynchronous Roche potential with respect
-/// to position at p for mass ratio q, star 2.
-/// \param q mass ratio  = M2/M1
-/// \param spin ratio of spin to orbital frequency.
-/// \param p position (units of separation)
+/// to position at p for mass ratio q.
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio  = M2/M1.
+/// * `spin`: ratio of spin to orbital frequency.
+/// * `p`: the point in question (units scaled by separation).
+/// 
+/// Returns:
+/// 
+/// * The partial derivative of the Roche potential wrt the position.
 ///
 pub fn drpot2(q: f64, spin: f64, p: &Vec3) -> Vec3 {
     if q <= 0. {
