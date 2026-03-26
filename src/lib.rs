@@ -1,34 +1,51 @@
 pub mod roche_context;
-pub mod vec3;
-pub mod blink;
-pub mod x_lagrange;
-pub mod pot_min;
-pub mod set_earth;
-pub mod potential;
-pub mod zeta_rlobe_eggleton;
-pub mod stream_physics;
-pub mod sphere_eclipse;
-pub mod ref_sphere;
-pub mod fblink;
-pub mod ingress_egress;
-pub mod disc_eclipse;
-pub mod face;
-pub mod vel_transform;
-
-pub use blink::blink;
-pub use vec3::Vec3;
-pub use x_lagrange::*;
-pub use set_earth::*;
-pub use potential::*;
-pub use zeta_rlobe_eggleton::*;
-pub use sphere_eclipse::*;
-pub use ref_sphere::ref_sphere;
-pub use pot_min::*;
-pub use fblink::fblink;
-pub use ingress_egress::ingress_egress;
 pub use roche_context::RocheContext;
+
+pub mod vec3;
+pub use vec3::Vec3;
+
+pub mod blink;
+pub use blink::blink;
+
+pub mod x_lagrange;
+pub use x_lagrange::*;
+
+pub mod pot_min;
+pub use pot_min::*;
+
+pub mod set_earth;
+pub use set_earth::*;
+
+pub mod potential;
+pub use potential::*;
+
+pub mod zeta_rlobe_eggleton;
+pub use zeta_rlobe_eggleton::*;
+
+pub mod sphere_eclipse;
+pub use sphere_eclipse::*;
+
+pub mod ref_sphere;
+pub use ref_sphere::ref_sphere;
+
+pub mod stream_physics;
+pub use stream_physics::*;
+
+pub mod fblink;
+pub use fblink::fblink;
+
+pub mod ingress_egress;
+pub use ingress_egress::ingress_egress;
+
+pub mod disc_eclipse;
 pub use disc_eclipse::disc_eclipse;
+
+pub mod face;
 pub use face::face;
+
+pub mod vel_transform;
+pub use vel_transform::vel_transform;
+
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Star {
