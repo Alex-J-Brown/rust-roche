@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyOSError;
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use std::fmt;
 
 #[derive(Debug)]
@@ -16,13 +16,16 @@ impl fmt::Display for RocheError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             RocheError::DbrentError => write!(f, "failed to bracket minimum with dbrent"),
-            RocheError::ParameterError(msg) => write!(f, "parameter error: {}", msg),
+            RocheError::ParameterError(msg) => write!(f, "{}", msg),
         }
     }
 }
 
 impl std::convert::From<RocheError> for PyErr {
     fn from(err: RocheError) -> PyErr {
-        PyOSError::new_err(err.to_string())
+        match err {
+            RocheError::DbrentError => PyRuntimeError::new_err(err.to_string()),
+            RocheError::ParameterError(_) => PyValueError::new_err(err.to_string()),
+        }
     }
 }
