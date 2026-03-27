@@ -1,5 +1,6 @@
 use crate::{Vec3, Star};
 use crate::{rpot1, rpot2, drpot1, drpot2};
+use crate::errors::RocheError;
 use pyo3::prelude::*;
 
 /// 
@@ -22,7 +23,7 @@ use pyo3::prelude::*;
 /// exception may be thrown if too many binary chops occur. The behaviour at the L1 point is undefined so do not try to call it there.
 /// 
 #[pyfunction]
-pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64, acc: f64) -> (Vec3, Vec3, f64, f64) {
+pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64, acc: f64) -> Result<(Vec3, Vec3, f64, f64), RocheError> {
 
     let mut pvec: Vec3;
     let mut r: f64;
@@ -44,7 +45,10 @@ pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64
 
     let mut tref: f64 = rp(q, spin, &(cofm + rref*direction));
     if tref < pref {
-        panic!("stuff")
+        let message = format!(
+            "point at reference radius {} appears to be at lower potential {} than the reference potential {}", rref, tref, pref
+        );
+        return Err(RocheError::FaceError(message));
     }
 
     let mut r1: f64 = rref/2.;
@@ -62,7 +66,8 @@ pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64
         i+=1;
     }
     if tref > pref {
-        panic!("other stuff");
+        let message = "could not find a radius with a potential below the reference potential; probably bad inputs.";
+        return Err(RocheError::FaceError(message.to_string()));
     }
 
     const MAXCHOP: i32 = 100;
@@ -78,12 +83,12 @@ pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64
         nchop += 1;
     }
     if nchop == MAXCHOP {
-        panic!("even more stuff");
+        return Err(RocheError::FaceError("reached maximum number of binary chops".to_string()));
     }
     r = (r1 + r2)/2.;
     pvec = cofm + r*direction;
     let mut dvec: Vec3 = drp(q, spin, &pvec);
     let g = dvec.length();
     dvec /= g;
-    return (pvec, dvec, r, g)
+    Ok((pvec, dvec, r, g))
 }

@@ -8,6 +8,8 @@ pub enum RocheError {
     DbrentError,
     // Parameter error
     ParameterError(String),
+    // error in Face function
+    FaceError(String),
 }
 
 impl std::error::Error for RocheError {}
@@ -17,6 +19,7 @@ impl fmt::Display for RocheError {
         match self {
             RocheError::DbrentError => write!(f, "failed to bracket minimum with dbrent"),
             RocheError::ParameterError(msg) => write!(f, "{}", msg),
+            RocheError::FaceError(msg) => write!(f, "{}", msg),
         }
     }
 }
@@ -26,6 +29,7 @@ impl std::convert::From<RocheError> for PyErr {
         match err {
             RocheError::DbrentError => PyRuntimeError::new_err(err.to_string()),
             RocheError::ParameterError(_) => PyValueError::new_err(err.to_string()),
+            RocheError::FaceError(_) => PyRuntimeError::new_err(err.to_string()),
         }
     }
 }
