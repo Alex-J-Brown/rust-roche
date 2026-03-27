@@ -54,7 +54,24 @@ impl Point {
         }
         true
     }
+
+    
+    ///
+    /// This version of is_visible will not correct for phases outside
+    /// of expected range to speed up large loops.
+    /// run phase = phase - phase.floor();
+    /// outside of loop beforehand
+    /// 
+    pub fn is_visible_phase_normed(&self, phase: f64) -> bool {
+        for &(p1, p2) in &self.eclipse {
+            if (phase >= p1 && phase <= p2) || phase <= p2 - 1.0 {
+                return false
+            }
+        }
+        true
+    }
 }
+
 
 impl Default for Point {
     fn default() -> Self {
