@@ -62,6 +62,10 @@ pub use vel_transform::vel_transform;
 pub mod solve_triads;
 pub use solve_triads::findi;
 
+pub mod lobes;
+pub use lobes::lobe1;
+pub use lobes::lobe2;
+
 #[pyclass(from_py_object, eq, eq_int)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Star {
@@ -113,6 +117,8 @@ fn roche(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(solve_triads::findi, m)?)?;
     m.add_function(wrap_pyfunction!(solve_triads::findq, m)?)?;
     m.add_function(wrap_pyfunction!(solve_triads::findphi, m)?)?;
+    m.add_function(wrap_pyfunction!(lobes::lobe1, m)?)?;
+    m.add_function(wrap_pyfunction!(lobes::lobe2, m)?)?;
     Ok(())
 }
 
