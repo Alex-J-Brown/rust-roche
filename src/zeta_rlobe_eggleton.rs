@@ -1,3 +1,4 @@
+use pyo3::prelude::*;
 ///
 /// zeta_rlobe_eggleton returns d log(rl) / d log (m2)
 /// where rl is Peter Eggleton's formula for the volume-averaged 
@@ -8,6 +9,7 @@
 /// \return Returns d log(rl) / d log (m2) where rl = Roche lobe radius of
 /// secondary star divided by separation according to Eggleton's formula.
 ///
+#[pyfunction]
 pub fn zeta_rlobe_eggleton(q: f64) -> f64 {
     let q1 = q.powf(1./3.);
     let loneq = (1. + q1).ln();
@@ -23,6 +25,7 @@ pub fn zeta_rlobe_eggleton(q: f64) -> f64 {
 /// \param q mass ratio = M2/M1
 /// \return Returns d zeta d q
 ///
+#[pyfunction]
 pub fn dzetadq_rlobe_eggleton(q: f64) -> f64 {
     let q1 = q.powf(1./3.);
     let q2 = q1*q1;

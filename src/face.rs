@@ -1,6 +1,6 @@
 use crate::{Vec3, Star};
 use crate::{rpot1, rpot2, drpot1, drpot2};
-
+use pyo3::prelude::*;
 
 /// 
 /// 'face' computes the position and orientation of a face on either star in a binary assuming Roche geometry given
@@ -13,14 +13,15 @@ use crate::{rpot1, rpot2, drpot1, drpot2};
 /// \param rref reference radius. This is a radius large enough to guarantee crossing of the reference potential. See ref_sphere
 /// \param pref reference potential. This defines the precise location of the face.
 /// \param acc  location accuracy (units of separation)
-/// \param pvec position vector of centre of face (position vector in standard binary coordinates), returned
-/// \param dvec orientation vector perpendicular to face, returned
-/// \param r    distance from centre of mass of star, returned
-/// \param g    magnitude of gravity at face, returned
+/// \return pvec position vector of centre of face (position vector in standard binary coordinates), returned
+/// \return dvec orientation vector perpendicular to face, returned
+/// \return r    distance from centre of mass of star, returned
+/// \return g    magnitude of gravity at face, returned
 /// \exception The routine throws exceptions if it cannot bracket the reference potential. This can occur if the reference radius fails to enclose
 /// the face in question, or if the face is so deep in the potential that the initial search fails to reach it. Finally if acc is set too low an
 /// exception may be thrown if too many binary chops occur. The behaviour at the L1 point is undefined so do not try to call it there.
 /// 
+#[pyfunction]
 pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64, acc: f64) -> (Vec3, Vec3, f64, f64) {
 
     let mut pvec: Vec3;

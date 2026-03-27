@@ -22,7 +22,6 @@ pub struct RocheContext {
 }
 
 impl RocheContext {
-
     pub fn new(q: f64, star: Star, spin: f64) -> Self {
         if q <= 0. {
             panic!("q = {} <= 0", q);

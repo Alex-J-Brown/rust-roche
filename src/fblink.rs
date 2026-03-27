@@ -1,6 +1,26 @@
+use std::error::Error;
 use crate::{Vec3, Star};
 use crate::{rpot_val, rpot_grad, ref_sphere, sphere_eclipse_vector, dbrent};
+use pyo3::prelude::*;
+use pyo3::exceptions::PyOSError;
+use std::fmt;
 
+#[derive(Debug)]
+pub struct FblinkError;
+
+impl std::error::Error for FblinkError {}
+
+impl fmt::Display for FblinkError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "failed to bracket minimum with dbrent")
+    }
+}
+
+impl std::convert::From<FblinkError> for PyErr {
+    fn from(err: FblinkError) -> PyErr {
+        PyOSError::new_err(err.to_string())
+    }
+}
 
 /// 
 /// fblink works out whether or not a given point is eclipsed by a Roche-distorted star by searching along the line
@@ -18,7 +38,8 @@ use crate::{rpot_val, rpot_grad, ref_sphere, sphere_eclipse_vector, dbrent};
 /// \param p      point of interest
 /// \return true if minimum potential is below the potential at stellar surface
 ///
-pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, p: &Vec3) -> Result<bool, &'static str> {
+#[pyfunction]
+pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, p: &Vec3) -> Result<bool, FblinkError> {
 
     let (rref, pref) = ref_sphere(q, star, spin, ffac);
 
@@ -93,7 +114,11 @@ pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, 
             dl
         };
 
-        let (_xmin, flam) = dbrent(lam1, lam, lam2, |x| func(x), |x| dfunc(x), acc, true, pref)?;
+        // this may fail
+        let (_xmin, flam) =  match dbrent(lam1, lam, lam2, |x| func(x), |x| dfunc(x), acc, true, pref){
+            Ok(res) => res,
+            Err(_) =>  return Err(FblinkError),
+        };
 
         Ok(flam < pref)
     } else {

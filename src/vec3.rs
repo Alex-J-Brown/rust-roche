@@ -1,13 +1,27 @@
 use std::ops;
+use pyo3::prelude::*;
 
+// useful for defining python operators
+#[derive(FromPyObject)]
+enum Vec3OrF64 {
+    Vec3(Vec3),
+    F64(f64)
+}
+
+#[pyclass(from_py_object)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3 {
+    #[pyo3(get, set)]
     pub x: f64,
+    #[pyo3(get, set)]
     pub y: f64,
+    #[pyo3(get, set)]
     pub z: f64,
 }
 
+#[pymethods]
 impl Vec3 {
+    #[new]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self {
             x: x,
@@ -15,7 +29,8 @@ impl Vec3 {
             z: z
         }
     }
-
+    
+    #[staticmethod]
     pub fn cofm1() -> Self {
         Self {
             x: 0.0,
@@ -24,6 +39,7 @@ impl Vec3 {
         }
     }
 
+    #[staticmethod]
     pub fn cofm2() -> Self {
         Self {
             x: 1.0,
@@ -38,13 +54,31 @@ impl Vec3 {
         self.z = z;
     }
 
-    // Normalises the vector
+    // Normalises the vector in place
     pub fn unit(&mut self) {
-        let norm_squared = self.x.powi(2) + self.y.powi(2) + self.z.powi(2);
-        let norm = norm_squared.sqrt();
+        let norm = self.length();
         self.x /= norm;
         self.y /= norm;
         self.z /= norm;
+    }
+
+    // Returns a normalised version of the vector
+    pub fn norm(&self) -> Self {
+        let norm = self.length();
+        Self {
+            x: self.x / norm,
+            y: self.y / norm,
+            z: self.z / norm
+        }
+    }
+
+    // For `__repr__` we want to return a string that Python code could use to recreate
+    // the `Vec3`, like `Vec3(5, 6, 7)` for example.
+    fn __repr__(&self) -> String {
+        // We use the `format!` macro to create a string. Its first argument is a
+        // format string, followed by any number of parameters which replace the
+        // `{}`'s in the format string.
+        format!("Vec3({}, {}, {})", self.x, self.y, self.z)
     }
 
     // Returns the length of the vector
@@ -69,7 +103,48 @@ impl Vec3 {
         let temp_z = self.x*other.y - self.y*other.x;
         Vec3::new(temp_x, temp_y, temp_z)
     }
-    
+
+    // Python dunder methods for arithmetic
+    fn __add__(&self, other: Vec3OrF64) -> Self {
+        match other {
+            Vec3OrF64::Vec3(v) => self.clone() + v,
+            Vec3OrF64::F64(f) => self.clone() + f
+        }
+    }
+    fn __radd__(&self, other: Vec3OrF64) -> Self {
+        match other {
+            Vec3OrF64::Vec3(v) => v + self.clone(),
+            Vec3OrF64::F64(f) => f + self.clone()
+        }
+    }
+    fn __sub__(&self, other: Vec3OrF64) -> Self {
+        match other {
+            Vec3OrF64::Vec3(v) => self.clone() - v,
+            Vec3OrF64::F64(f) => self.clone() - f
+        }
+    }
+    fn __rsub__(&self, other: Vec3OrF64) -> Self {
+        match other {
+            Vec3OrF64::Vec3(v) => v - self.clone(),
+            Vec3OrF64::F64(f) => f - self.clone()   
+        }
+    }
+    fn __mul__(&self, other: f64) -> Self {
+        self.clone() * other
+    }
+    fn __rmul__(&self, other: f64) -> Self {
+        other * self.clone()
+    }
+    fn __truediv__(&self, other: f64) -> Self {
+        self.clone() / other
+    }
+    fn __rtruediv__(&self, other: f64) -> Self {
+        other / self.clone()
+    }
+    fn __neg__(&self) -> Self {
+        -self.clone()
+    }
+
 }
 
 // in-place multiplication by f64
@@ -121,6 +196,30 @@ impl ops::Add for Vec3 {
     }
 }
 
+// Sum of vector and f64
+impl ops::Add<f64> for Vec3 {
+    type Output = Self;
+    fn add(self, other: f64) -> Self {
+        Self {
+            x: self.x + other,
+            y: self.y + other,
+            z: self.z + other,
+        }
+    }
+}
+
+// Sum of f64 and vector
+impl ops::Add<Vec3> for f64 {
+    type Output = Vec3;
+    fn add(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self + other.x,
+            y: self + other.y,
+            z: self + other.z,
+        }
+    }
+}
+
 // Difference between two vectors
 impl ops::Sub for Vec3 {
     type Output = Self;
@@ -129,6 +228,30 @@ impl ops::Sub for Vec3 {
             x: self.x - other.x,
             y: self.y - other.y,
             z: self.z - other.z,
+        }
+    }
+}
+
+// Difference between vector and f64
+impl ops::Sub<f64> for Vec3 {
+    type Output = Self;
+    fn sub(self, other: f64) -> Self {
+        Self {
+            x: self.x - other,
+            y: self.y - other,
+            z: self.z - other,
+        }
+    }
+}
+
+// Difference between f64 and vector
+impl ops::Sub<Vec3> for f64 {
+    type Output = Vec3;
+    fn sub(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self - other.x,
+            y: self - other.y,
+            z: self - other.z,
         }
     }
 }
@@ -197,3 +320,4 @@ impl ops::Neg for Vec3 {
         }
     }
 }
+

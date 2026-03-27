@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 use crate::{Vec3, Star};
-
+use pyo3::prelude::*;
 
 
 ///
@@ -21,6 +21,7 @@ use crate::{Vec3, Star};
 /// 
 /// * Roche potential at point.
 ///
+#[pyfunction]
 pub fn rpot_val(q: f64, star: Star, spin: f64, earth: &Vec3, p: &Vec3, lam: f64) -> f64 {
 
     let r: Vec3 = *p + lam* *earth;
@@ -51,6 +52,7 @@ pub fn rpot_val(q: f64, star: Star, spin: f64, earth: &Vec3, p: &Vec3, lam: f64)
 /// * `dphi`: first derivative of the Roche potential wrt phi
 /// * `dlam`: first derivative of the Roche potential wrt lambda
 ///
+#[pyfunction]
 pub fn rpot_val_grad(q: f64, star: Star, spin: f64, earth: &Vec3, p: &Vec3, lam: f64) -> (f64, f64, f64) {
 
         let r: Vec3 = *p + lam* *earth;
@@ -89,6 +91,7 @@ pub fn rpot_val_grad(q: f64, star: Star, spin: f64, earth: &Vec3, p: &Vec3, lam:
 /// * `dphi`: first derivative of the Roche potential wrt phi
 /// * `dlam`: first derivative of the Roche potential wrt lambda
 ///
+#[pyfunction]
 pub fn rpot_grad(
     q: f64,
     star: Star,
@@ -126,6 +129,7 @@ pub fn rpot_grad(
 /// 
 /// * the Roche potential.
 ///
+#[pyfunction]
 pub fn rpot(q: f64, p: &Vec3) -> f64 {
     if q <= 0. {
         panic!("q = {} <= 0", q);
@@ -154,6 +158,7 @@ pub fn rpot(q: f64, p: &Vec3) -> f64 {
 /// 
 /// * the Roche potential.
 ///
+#[pyfunction]
 pub fn rpot1(q: f64, spin: f64, p: &Vec3) -> f64 {
     if q <= 0. {
         panic!("q = {} <= 0", q);
@@ -182,6 +187,7 @@ pub fn rpot1(q: f64, spin: f64, p: &Vec3) -> f64 {
 /// 
 /// * the Roche potential.
 ///
+#[pyfunction]
 pub fn rpot2(q: f64, spin: f64, p: &Vec3) -> f64 {
     if q <= 0. {
         panic!("q = {} <= 0", q);
@@ -210,6 +216,7 @@ pub fn rpot2(q: f64, spin: f64, p: &Vec3) -> f64 {
 /// 
 /// * The partial derivative of the Roche potential wrt the position.
 ///
+#[pyfunction]
 pub fn drpot(q: f64, p: &Vec3) -> Vec3 {
     if q <= 0. {
         panic!("q = {} <= 0", q);
@@ -241,6 +248,7 @@ pub fn drpot(q: f64, p: &Vec3) -> Vec3 {
 /// 
 /// * The partial derivative of the Roche potential wrt the position.
 ///
+#[pyfunction]
 pub fn drpot1(q: f64, spin: f64, p: &Vec3) -> Vec3 {
     if q <= 0. {
         panic!("q = {} <= 0", q);
@@ -273,6 +281,7 @@ pub fn drpot1(q: f64, spin: f64, p: &Vec3) -> Vec3 {
 /// 
 /// * The partial derivative of the Roche potential wrt the position.
 ///
+#[pyfunction]
 pub fn drpot2(q: f64, spin: f64, p: &Vec3) -> Vec3 {
     if q <= 0. {
         panic!("q = {} <= 0", q);

@@ -1,3 +1,5 @@
+use pyo3::prelude::*;
+
 ///
 /// x_l1 calculates the x coordinate of the L1 Lagrangian point in terms
 /// of the orbital separation of the two stars which have a mass ratio, q.
@@ -7,6 +9,8 @@
 /// 
 ///  \param q mass ratio = M2/M1
 /// 
+#[pyfunction]
+#[pyo3(name = "xl1")]
 pub fn x_l1(q: f64) -> f64 {
 
     const NMAX: i32 = 1000;
@@ -56,6 +60,8 @@ pub fn x_l1(q: f64) -> f64 {
 ///  \param q mass ratio = M2/M1
 ///  \param spin
 /// 
+#[pyfunction]
+#[pyo3(name = "xl11")]
 pub fn x_l1_1(q: f64, spin: f64) -> f64 {
 
     const NMAX: i32 = 1000;
@@ -106,6 +112,8 @@ pub fn x_l1_1(q: f64, spin: f64) -> f64 {
 ///  \param q mass ratio = M2/M1
 ///  \param spin
 /// 
+#[pyfunction]
+#[pyo3(name = "xl12")]
 pub fn x_l1_2(q: f64, spin: f64) -> f64 {
 
     const NMAX: i32 = 1000;
@@ -155,6 +163,8 @@ pub fn x_l1_2(q: f64, spin: f64) -> f64 {
 /// 
 ///  \param q mass ratio = M2/M1
 /// 
+#[pyfunction]
+#[pyo3(name = "xl2")]
 pub fn x_l2(q: f64) -> f64 {
 
     const NMAX: i32 = 1000;
@@ -203,6 +213,8 @@ pub fn x_l2(q: f64) -> f64 {
 /// 
 ///  \param q mass ratio = M2/M1
 /// 
+#[pyfunction]
+#[pyo3(name = "xl3")]
 pub fn x_l3(q: f64) -> f64 {
 
     const NMAX: i32 = 1000;
