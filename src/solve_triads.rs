@@ -30,7 +30,7 @@ pub fn findi(q: f64, dphi: f64, acc: f64, delta_i: f64) -> Result<f64, RocheErro
     if acc <= 0.0 || acc >= 0.1 {
         return Err(RocheError::ParameterError("accuracy must be between 0 and 0.1".to_string()));
     }
-    if delta_i <= 0.0 || delta_i >= 10 {
+    if delta_i <= 0.0 || delta_i >= 10.0 {
         return Err(RocheError::ParameterError("delta_i must be between 0 and 10 degrees".to_string()));
     }
 
