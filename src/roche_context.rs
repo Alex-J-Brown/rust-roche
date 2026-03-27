@@ -1,6 +1,6 @@
 use std::panic;
 use std::f64::consts::TAU;
-use crate::{Vec3, Star};
+use crate::{Vec3, Star, Etype};
 use crate::{rpot_val, rpot_grad, rpot1, rpot2, drpot1, drpot2};
 use crate::{pot_min, dbrent, x_l1, x_l1_1, x_l1_2, x_l2, x_l3};
 use crate::{sphere_eclipse, sphere_eclipse_vector, set_earth};
@@ -290,6 +290,25 @@ impl RocheContext {
             return false;
         }
 
+    }
+
+
+    pub fn star_eclipse(&self, r: f64, ffac: f64, iangle: f64, posn: &Vec3, delta: f64, roche: bool, star: Star, eclipses: &mut Etype) -> () {
+        let ri = iangle.to_radians();
+        let (sini, cosi) = ri.sin_cos();
+        let cofm = match star {
+            Star::Primary => Vec3::cofm1(),
+            Star::Secondary => Vec3::cofm2(),
+        };
+        let mut lam1: f64 = 0.0;
+        let mut lam2: f64 = 0.0;
+        let mut ingress: f64 = 0.0;
+        let mut egress: f64 = 0.0;
+        // let mut eclipses = Etype::new();
+        if (roche && self.ingress_egress(ffac, iangle, delta, &posn, &mut ingress, &mut egress)) ||
+            (!roche && sphere_eclipse(cosi, sini, &posn, &cofm, r, &mut ingress, &mut egress, &mut lam1, &mut lam2)) {
+            eclipses.push((ingress, egress));
+        }
     }
 
 
