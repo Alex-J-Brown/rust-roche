@@ -46,6 +46,9 @@ pub use ingress_egress::ingress_egress;
 pub mod disc_eclipse;
 pub use disc_eclipse::disc_eclipse;
 
+pub mod star_eclipse;
+pub use star_eclipse::star_eclipse;
+
 pub mod face;
 pub use face::face;
 
