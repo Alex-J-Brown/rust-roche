@@ -1,5 +1,7 @@
 use pyo3::prelude::*;
 
+pub mod errors;
+
 pub mod roche_context;
 pub use roche_context::RocheContext;
 
