@@ -57,6 +57,8 @@ pub use face::*;
 pub mod vel_transform;
 pub use vel_transform::vel_transform;
 
+pub mod solve_triads;
+pub use solve_triads::findi;
 
 #[pyclass(from_py_object, eq, eq_int)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -71,6 +73,7 @@ pub type Etype = Vec<(f64, f64)>;
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
 }
+
 
 
 // Python module
@@ -105,6 +108,9 @@ fn roche(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(stream_physics::rocacc, m)?)?;
     m.add_function(wrap_pyfunction!(stream_physics::strinit, m)?)?;
     m.add_function(wrap_pyfunction!(face::face, m)?)?;
+    m.add_function(wrap_pyfunction!(solve_triads::findi, m)?)?;
+    m.add_function(wrap_pyfunction!(solve_triads::findq, m)?)?;
+    m.add_function(wrap_pyfunction!(solve_triads::findphi, m)?)?;
     Ok(())
 }
 

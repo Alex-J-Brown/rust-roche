@@ -1,4 +1,3 @@
-use std::error::Error;
 use crate::{Vec3, Star};
 use crate::{rpot_val, rpot_grad, ref_sphere, sphere_eclipse_vector, dbrent};
 use pyo3::prelude::*;
