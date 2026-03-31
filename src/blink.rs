@@ -22,13 +22,12 @@ use crate::x_l1;
 ///
 pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
 
-    static mut QQ: f64 = -100.0;
-    let mut x_cofm: f64 = 0.0;
-    let mut c1: f64 = 0.0;
-    let mut c2: f64 = 0.0;
-    let mut step: f64 = 0.0;
-    let mut pp: f64 = 0.0;
-    let mut crit: f64 = 0.0;
+    let mut x_cofm: f64;
+    let c1: f64;
+    let c2: f64;
+    let step: f64;
+    let pp: f64;
+    let crit: f64;
     let mut p: f64;
     let p1: f64;
     let p2: f64;
@@ -37,38 +36,34 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     let mut r1: f64;
     let mut r2: f64;
     // Compute q dependent quantities
-
-    if q != unsafe { QQ } {
-        if q <= 0.0 {
-            panic!("q = {} <= 0", q);
-        }
-
-        if acc <= 0.0 {
-            panic!("Invalid accuracy parameter. {} <= 0.0.", acc);
-        }
-
-        unsafe { QQ = q; }    
-        x_cofm = 1.0 / (1.0 + q);
-        c1 = 2.0 * x_cofm;
-        x_cofm *= q;
-        c2 = 2.0 * x_cofm;
-
-        // Locate the inner Lagrangian point (L1)
-        let rl1: f64 = x_l1(q);
-
-        // Evaluate Roche potential at L1 point.
-        r1 = rl1;
-        r2 = 1.0 - rl1;
-        let xc: f64 = rl1 - x_cofm;
-        crit = c1/r1 + c2/r2 + xc*xc;
-
-        // The red star lies entirely within the sphere centred on its
-        // centre of mass and reaching the inner Lagrangian point.
-
-        let rsphere: f64 = 1.0 - rl1;
-        pp = rsphere*rsphere;
-        step = rsphere*acc
+    if q <= 0.0 {
+        panic!("q = {} <= 0", q);
     }
+
+    if acc <= 0.0 {
+        panic!("Invalid accuracy parameter. {} <= 0.0.", acc);
+    }
+ 
+    x_cofm = 1.0 / (1.0 + q);
+    c1 = 2.0 * x_cofm;
+    x_cofm *= q;
+    c2 = 2.0 * x_cofm;
+
+    // Locate the inner Lagrangian point (L1)
+    let rl1: f64 = x_l1(q);
+
+    // Evaluate Roche potential at L1 point.
+    r1 = rl1;
+    r2 = 1.0 - rl1;
+    let xc: f64 = rl1 - x_cofm;
+    crit = c1/r1 + c2/r2 + xc*xc;
+
+    // The red star lies entirely within the sphere centred on its
+    // centre of mass and reaching the inner Lagrangian point.
+
+    let rsphere: f64 = 1.0 - rl1;
+    pp = rsphere*rsphere;
+    step = rsphere*acc;
 
     // From now on computations are done every call. Main point is
     // to try to bail out as soon as possible to save time 
