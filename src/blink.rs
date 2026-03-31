@@ -23,6 +23,14 @@ use crate::x_l1;
 pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
 
     static mut QQ: f64 = -100.0;
+    static mut ACC: f64 = -100.0;
+    static mut X_COFM: f64 = 0.0;
+    static mut C1: f64 = 0.0;
+    static mut C2: f64 = 0.0;
+    static mut STEP: f64 = 0.0;
+    static mut PP: f64 = 0.0;
+    static mut CRIT: f64 = 0.0;
+
     let mut x_cofm: f64 = 0.0;
     let mut c1: f64 = 0.0;
     let mut c2: f64 = 0.0;
@@ -32,13 +40,9 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     let mut p: f64;
     let p1: f64;
     let p2: f64;
-
-
-    let mut r1: f64;
-    let mut r2: f64;
     // Compute q dependent quantities
 
-    if q != unsafe { QQ } {
+    if q != unsafe { QQ } || acc != unsafe { ACC } {
         if q <= 0.0 {
             panic!("q = {} <= 0", q);
         }
@@ -47,29 +51,41 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
             panic!("Invalid accuracy parameter. {} <= 0.0.", acc);
         }
 
-        unsafe { QQ = q; }    
-        x_cofm = 1.0 / (1.0 + q);
-        c1 = 2.0 * x_cofm;
-        x_cofm *= q;
-        c2 = 2.0 * x_cofm;
+        unsafe { 
+            QQ = q; 
+            ACC = acc;
+            X_COFM = 1.0 / (1.0 + q);
+            C1 = 2.0 * x_cofm;
+            X_COFM *= q;
+            C2 = 2.0 * x_cofm;
 
-        // Locate the inner Lagrangian point (L1)
-        let rl1: f64 = x_l1(q);
+            // Locate the inner Lagrangian point (L1)
+            let rl1: f64 = x_l1(q);
 
-        // Evaluate Roche potential at L1 point.
-        r1 = rl1;
-        r2 = 1.0 - rl1;
-        let xc: f64 = rl1 - x_cofm;
-        crit = c1/r1 + c2/r2 + xc*xc;
+            // Evaluate Roche potential at L1 point.
+            let r1 = rl1;
+            let r2 = 1.0 - rl1;
+            let xc: f64 = rl1 - x_cofm;
+            CRIT = c1/r1 + c2/r2 + xc*xc;
 
-        // The red star lies entirely within the sphere centred on its
-        // centre of mass and reaching the inner Lagrangian point.
+            // The red star lies entirely within the sphere centred on its
+            // centre of mass and reaching the inner Lagrangian point.
 
-        let rsphere: f64 = 1.0 - rl1;
-        pp = rsphere*rsphere;
-        step = rsphere*acc
+            let rsphere: f64 = 1.0 - rl1;
+            PP = rsphere*rsphere;
+            STEP = rsphere*acc;
+        }
     }
-
+    // copy static variables to local variables to avoid unsafe access every time
+    unsafe {
+        x_cofm = X_COFM;
+        c1 = C1;
+        c2 = C2;
+        step = STEP;
+        pp = PP;
+        crit = CRIT;
+    }
+    
     // From now on computations are done every call. Main point is
     // to try to bail out as soon as possible to save time 
 
@@ -143,8 +159,8 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     }
 
     let rs1: f64 = x1*x1 + rr;
-    r1 = rs1.sqrt();
-    r2 = rs2.sqrt();
+    let mut r1 = rs1.sqrt();
+    let mut r2 = rs2.sqrt();
 
     // Deeper in well than inner Lagrangian, therefore eclipsed.
 
