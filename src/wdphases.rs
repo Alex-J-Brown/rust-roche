@@ -106,7 +106,7 @@ fn uneclipsed_3(q: f64, iangle: f64, phase: f64, r1: f64, ffac: f64, ntheta: i32
     let mut sint: f64;
     let mut cost: f64;
     for i in 0..ntheta {
-        theta = FRAC_PI_2 * (i/(ntheta-1)) as f64;
+        theta = FRAC_PI_2 * (i as f64 /(ntheta as f64 - 1.0));
         (sint, cost) = theta.sin_cos();
         v = -x*cost + y*sint;
         if !fblink(q, Star::Secondary, 1.0, ffac, 1.0e-5, &set_earth_iangle(iangle, phase), &v)? {
@@ -131,7 +131,7 @@ fn eclipsed_4(q: f64, iangle: f64, phase: f64, r1: f64, ffac: f64, ntheta: i32) 
     let mut sint: f64;
     let mut cost: f64;
     for i in 0..ntheta {
-        theta = FRAC_PI_2 * (i/(ntheta-1)) as f64;
+        theta = FRAC_PI_2 * (i as f64 /(ntheta as f64 - 1.0));
         (sint, cost) = theta.sin_cos();
         v = x*cost - y*sint;
         if fblink(q, Star::Secondary, 1.0, ffac, 1.0e-5, &set_earth_iangle(iangle, phase), &v)? {
