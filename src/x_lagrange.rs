@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use crate::errors::RocheError;
 
 ///
 /// x_l1 calculates the x coordinate of the L1 Lagrangian point in terms
@@ -11,13 +12,14 @@ use pyo3::prelude::*;
 /// 
 #[pyfunction]
 #[pyo3(name = "xl1")]
-pub fn x_l1(q: f64) -> f64 {
+pub fn x_l1(q: f64) -> Result<f64, RocheError> {
 
     const NMAX: i32 = 1000;
     const EPS: f64 = 1.0e-12;
 
     if q <= 0. {
-        panic!("q = {} <= 0", q);
+        let message = format!("q = {} <= 0", q);
+        return Err(RocheError::ParameterError(message));
     }
 
     let mu: f64 = q/(1. + q);
@@ -45,7 +47,7 @@ pub fn x_l1(q: f64) -> f64 {
         x   -= f/df;
         n+=1;
     }
-    return x
+    return Ok(x)
 }
 
 
@@ -62,13 +64,14 @@ pub fn x_l1(q: f64) -> f64 {
 /// 
 #[pyfunction]
 #[pyo3(name = "xl11")]
-pub fn x_l1_1(q: f64, spin: f64) -> f64 {
+pub fn x_l1_1(q: f64, spin: f64) -> Result<f64, RocheError> {
 
     const NMAX: i32 = 1000;
     const EPS: f64 = 1.0e-12;
 
     if q <= 0. {
-        panic!("q = {} <= 0", q);
+        let message = format!("q = {} <= 0", q);
+        return Err(RocheError::ParameterError(message));
     }
 
     let spin_squared: f64 = spin*spin;
@@ -97,7 +100,7 @@ pub fn x_l1_1(q: f64, spin: f64) -> f64 {
         x   -= f/df;
         n+=1;
     }
-    return x
+    return Ok(x)
 }
 
 
@@ -114,13 +117,14 @@ pub fn x_l1_1(q: f64, spin: f64) -> f64 {
 /// 
 #[pyfunction]
 #[pyo3(name = "xl12")]
-pub fn x_l1_2(q: f64, spin: f64) -> f64 {
+pub fn x_l1_2(q: f64, spin: f64) -> Result<f64, RocheError> {
 
     const NMAX: i32 = 1000;
     const EPS: f64 = 1.0e-12;
 
     if q <= 0. {
-        panic!("q = {} <= 0", q);
+        let message = format!("q = {} <= 0", q);
+        return Err(RocheError::ParameterError(message));
     }
 
     let spin_squared: f64 = spin*spin;
@@ -149,7 +153,7 @@ pub fn x_l1_2(q: f64, spin: f64) -> f64 {
         x   -= f/df;
         n+=1;
     }
-    return x
+    return Ok(x)
 }
 
 
@@ -165,13 +169,14 @@ pub fn x_l1_2(q: f64, spin: f64) -> f64 {
 /// 
 #[pyfunction]
 #[pyo3(name = "xl2")]
-pub fn x_l2(q: f64) -> f64 {
+pub fn x_l2(q: f64) -> Result<f64, RocheError> {
 
     const NMAX: i32 = 1000;
     const EPS: f64 = 1.0e-12;
 
     if q <= 0. {
-        panic!("q = {} <= 0", q);
+        let message = format!("q = {} <= 0", q);
+        return Err(RocheError::ParameterError(message));
     }
 
     let mu = q/(1. + q);
@@ -199,7 +204,7 @@ pub fn x_l2(q: f64) -> f64 {
         x   -= f/df;
         n+=1;
     }
-    return x
+    return Ok(x)
 }
 
 
@@ -215,13 +220,14 @@ pub fn x_l2(q: f64) -> f64 {
 /// 
 #[pyfunction]
 #[pyo3(name = "xl3")]
-pub fn x_l3(q: f64) -> f64 {
+pub fn x_l3(q: f64) -> Result<f64, RocheError> {
 
     const NMAX: i32 = 1000;
     const EPS: f64 = 1.0e-12;
 
     if q <= 0. {
-        panic!("q = {} <= 0", q);
+        let message = format!("q = {} <= 0", q);
+        return Err(RocheError::ParameterError(message));
     }
 
     let mu = q/(1. + q);
@@ -249,5 +255,5 @@ pub fn x_l3(q: f64) -> f64 {
         x   -= f/df;
         n+=1;
     }
-    return x
+    return Ok(x)
 }

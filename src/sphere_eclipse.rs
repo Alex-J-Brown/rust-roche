@@ -14,16 +14,21 @@ use pyo3::prelude::*;
 /// project backwards. If the point in inside the sphere, phi1 will be set = 0, phi2 = 1,
 /// lam1 = 0, and lam2 = the largest value of the multiplier lambda
 ///
-/// \param cosi cosine of orbital inclination
-/// \param sini sine of orbital inclination
-/// \param r       the position vector of the point in question (units of binary separation)
-/// \param c       the centre of the sphere enclosing the star (units of binary separation)
-/// \param rsphere the radius defining the sphere enclosing the star (units of binary separation)
-/// \param phi1    if eclipse by the sphere, this is the start of the phase range (0 -1)
-/// \param phi2    if eclipse by the sphere, this is the end of the phase range (least amount > phi1)
-/// \param lam1    if eclipse by the sphere, this is the start of the multiplier range (>=0)
-/// \param lam2    if eclipse by the sphere, this is the end of the multiplier range (>lam1)
-/// \return false = not eclipsed; true = eclipsed.
+/// Arguments:
+/// 
+/// * `cosi`: cosine of orbital inclination
+/// * `sini`: sine of orbital inclination
+/// * `r`: the position vector of the point in question (units of binary separation)
+/// * `c`: the centre of the sphere enclosing the star (units of binary separation)
+/// * `rsphere`: the radius defining the sphere enclosing the star (units of binary separation)
+/// * `phi1`: if eclipse by the sphere, this is the start of the phase range (0 -1)
+/// * `phi2`: if eclipse by the sphere, this is the end of the phase range (least amount > phi1)
+/// * `lam1`: if eclipse by the sphere, this is the start of the multiplier range (>=0)
+/// * `lam2`: if eclipse by the sphere, this is the end of the multiplier range (>lam1)
+/// 
+/// Returns:
+/// 
+/// * false = not eclipsed; true = eclipsed.
 ///
 pub fn sphere_eclipse(cosi: f64, sini: f64, r: &Vec3, c: &Vec3, rsphere: f64, phi1: &mut f64, phi2: &mut f64, lam1: &mut f64, lam2: &mut f64) -> bool {
 
@@ -74,12 +79,17 @@ pub fn sphere_eclipse(cosi: f64, sini: f64, r: &Vec3, c: &Vec3, rsphere: f64, ph
 /// project backwards. If the point in inside the sphere, phi1 will be set = 0, phi2 = 1,
 /// lam1 = 0, and lam2 = the largest value of the multiplier lambda
 ///
-/// \param cosi     cosine of orbital inclination
-/// \param sini     sine of orbital inclination
-/// \param r (Vec3) the position vector of the point in question (units of binary separation)
-/// \param c (Vec3) the centre of the sphere enclosing the star (units of binary separation)
-/// \param rsphere  the radius defining the sphere enclosing the star (units of binary separation)
-/// \return (eclipsed, phi1, phi2, lam1, lam2)
+/// Arguments:
+/// 
+/// * `cosi`:     cosine of orbital inclination
+/// * `sini`:     sine of orbital inclination
+/// * `r (Vec3)`: the position vector of the point in question (units of binary separation)
+/// * `c (Vec3)`: the centre of the sphere enclosing the star (units of binary separation)
+/// * `rsphere`:  the radius defining the sphere enclosing the star (units of binary separation)
+/// 
+/// Returns:
+/// 
+///  * (eclipsed, phi1, phi2, lam1, lam2)
 ///
 #[pyfunction]
 #[pyo3(name = "sphere_eclipse")]
@@ -103,14 +113,19 @@ pub fn sphere_eclipse_wrapper(cosi: f64, sini: f64, r: &Vec3, c: &Vec3, rsphere:
 /// be used as starting points for Roche lobe computations. These can then be used as the 
 /// starting point for later computation. Points inside the sphere are regarded as being
 /// eclipsed with the lower mulitplier set = 0
+/// 
+/// Arguments:
 ///
-/// \param earth   vector towards Earth
-/// \param r       the position vector of the point in question (units of binary separation)
-/// \param c       the centre of the sphere (units of binary separation)
-/// \param rsphere the radius defining the sphere enclosing the star (units of binary separation)
-/// \param lam1    if eclipse by the sphere, this is the start of the multiplier range
-/// \param lam2    if eclipse by the sphere, this is the end of the multiplier range
-/// \return false = not eclipsed; true = eclipsed.
+/// * `earth`:   vector towards Earth
+/// * `r`:       the position vector of the point in question (units of binary separation)
+/// * `c`:       the centre of the sphere (units of binary separation)
+/// * `rsphere`: the radius defining the sphere enclosing the star (units of binary separation)
+/// * `lam1`:    if eclipse by the sphere, this is the start of the multiplier range
+/// * `lam2`:    if eclipse by the sphere, this is the end of the multiplier range
+/// 
+/// Returns:
+/// 
+/// * false = not eclipsed; true = eclipsed.
 ///
 pub fn sphere_eclipse_vector(earth: &Vec3, r: &Vec3, c: &Vec3, rsphere: f64, lam1: &mut f64, lam2: &mut f64) -> bool {
 
@@ -145,11 +160,16 @@ pub fn sphere_eclipse_vector(earth: &Vec3, r: &Vec3, c: &Vec3, rsphere: f64, lam
 /// The multiplier along the line of sight is lambda, with the smallest and largest values
 /// returned as lam1 and lam2, respectively. 
 ///
-/// \param earth   vector towards Earth
-/// \param r       the position vector of the point in question (units of binary separation)
-/// \param c       the centre of the sphere (units of binary separation)
-/// \param rsphere the radius defining the sphere enclosing the star (units of binary separation)
-/// \return (eclipsed, lam1, lam2)
+/// Arguments:
+///
+/// * `earth`:   vector towards Earth
+/// * `r`:       the position vector of the point in question (units of binary separation)
+/// * `c`:       the centre of the sphere (units of binary separation)
+/// * `rsphere`: the radius defining the sphere enclosing the star (units of binary separation)
+/// 
+/// Returns:
+///
+/// * (eclipsed, lam1, lam2)
 ///
 #[pyfunction]
 #[pyo3(name = "sphere_eclipse_vector")]

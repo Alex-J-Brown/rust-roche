@@ -1,4 +1,5 @@
 use crate::Vec3;
+use crate::errors::RocheError;
 use crate::x_l1;
 
 ///
@@ -20,7 +21,7 @@ use crate::x_l1;
 /// the radius below the surface of the Roche lobe. acc of order 0.1 should therefore do the job.
 /// \return false = not eclipsed; true = eclipsed.
 ///
-pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
+pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> Result<bool, RocheError> {
 
     let mut x_cofm: f64;
     let c1: f64;
@@ -36,12 +37,14 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     let mut r1: f64;
     let mut r2: f64;
     // Compute q dependent quantities
-    if q <= 0.0 {
-        panic!("q = {} <= 0", q);
+    if q <= 0. {
+        let message = format!("q = {} <= 0", q);
+        return Err(RocheError::ParameterError(message));
     }
 
     if acc <= 0.0 {
-        panic!("Invalid accuracy parameter. {} <= 0.0.", acc);
+        let message = format!("Invalid accuracy parameter. {} <= 0.0.", acc);
+        return Err(RocheError::ParameterError(message));
     }
  
     x_cofm = 1.0 / (1.0 + q);
@@ -50,7 +53,7 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     c2 = 2.0 * x_cofm;
 
     // Locate the inner Lagrangian point (L1)
-    let rl1: f64 = x_l1(q);
+    let rl1: f64 = x_l1(q)?;
 
     // Evaluate Roche potential at L1 point.
     r1 = rl1;
@@ -82,7 +85,7 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     let mut fac: f64 = b*b - c;
 
     if fac <= 0.0 {
-        return false;
+        return Ok(false);
     }
 
     fac = fac.sqrt();
@@ -94,7 +97,7 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     let par2: f64 = -b + fac;
 
     if par2 <= 0.0 {
-        return false;
+        return Ok(false);
     }
 
     //  Now for the hard work. The photon's path does go
@@ -134,7 +137,7 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     // division by 0 later
 
     if rs2 <= 0.0 {
-        return true;
+        return Ok(true);
     }
 
     let rs1: f64 = x1*x1 + rr;
@@ -147,7 +150,7 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
     c = c1/r1 + c2/r2 + xc*xc + yy;
 
     if c > crit {
-        return true;
+        return Ok(true);
     }
 
     // Now we need to step. Determine step direction by 
@@ -189,16 +192,16 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> bool {
         rr = yy + x3*x3;
         r2 = (xm*xm + rr).sqrt();
         if r2 <= 0.0 {
-            return true;
+            return Ok(true);
         }
         r1 = (x1*x1 + rr).sqrt();
         xc = x1 - x_cofm;
         c = c1/r1 + c2/r2 + xc*xc + yy;
         if c > crit {
-            return true;
+            return Ok(true);
         }
     }
 
-    return false
+    return Ok(false)
 
 }

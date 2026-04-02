@@ -1,5 +1,6 @@
 use std::f64::consts::TAU;
-use crate::{Vec3, Etype};
+use crate::{Etype, Vec3};
+use crate::errors::RocheError;
 
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -21,20 +22,24 @@ pub enum Circle {
 /// disc_eclipse works out phase ranges during which a cylindrically symmetric, flared disc 
 /// running between a pair of radii eclipses a given point. 
 ///
-/// \param iangle  the orbital inclination, degrees. 90 = edge on.
-/// \param r       the position vector of the point in question (units of binary separation)
-/// \param rdisc1 inner disc  radius, units of separation
-/// \param rdisc2 outer disc radius, units of separation
-/// \param beta exponent of flaring, so that the height scales as r**beta. beta should be >= 1
-/// \param height disc height at unit radius in disc (even if it does not exist)
-/// \return a vector of ingress and egress phase pairs during which the point in question is eclipsed.
+/// Arguments:
+/// 
+/// * `iangle`:  the orbital inclination, degrees. 90 = edge on.
+/// * `r`:       the position vector of the point in question (units of binary separation)
+/// * `rdisc1`: inner disc  radius, units of separation
+/// * `rdisc2`: outer disc radius, units of separation
+/// * `beta`: exponent of flaring, so that the height scales as r**beta. beta should be >= 1
+/// * `height disc`: height at unit radius in disc (even if it does not exist)
+/// Returns:
+/// 
+/// * a vector of ingress and egress phase pairs during which the point in question is eclipsed.
 /// The ingress phase will always be between 0 and 1 while the egress phase will be larger than this, but
 /// by no more than 1 cycle. If the vector is null, no eclipse takes place.
 ///
-pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f64, r: &Vec3) -> Etype {
+pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f64, r: &Vec3) -> Result<Etype, RocheError> {
 
-    if beta < 1.0 {
-        panic!("beta must be >= 1");
+    if beta <= 1.0 {
+        return Err(RocheError::ParameterError("beta must be >= 1.0".to_string()));
     }
 
     // Compute and store cosine and sine of inclination if need be.
@@ -53,7 +58,7 @@ pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f6
 
     // Deal with points too high ever to be eclipsed whatever the inclination
     if r.z >= h_out {
-        return temp;
+        return Ok(temp);
     }
 
     // Special case of exactly edge-on, only curved outer edge matters.
@@ -64,7 +69,7 @@ pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f6
                 temp.push((0.0, 1.0));
             }
         }
-        return temp;
+        return Ok(temp);
     }
 
     // Work out distance from axis
@@ -73,7 +78,7 @@ pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f6
     if rdisc1 < rxy && rxy < rdisc2 && r.z.abs() < height*rxy.powf(beta) {
         // Point is inside disc and so is eclipsed
         temp.push((0.0, 1.1));
-        return temp;
+        return Ok(temp);
     }
 
     let tani: f64 = sini/cosi;
@@ -100,7 +105,7 @@ pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f6
             egress = ingress + 1.0 - 2.0*phase;
             temp.push((ingress, egress));
         }
-        return temp;
+        return Ok(temp);
     }
 
     // Compute the radius of circle formed by LOSC in the plane of 
@@ -109,7 +114,7 @@ pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f6
 
     // Circle encloses rim, so no intersection
     if rcone_lo >= rxy + rdisc2 {
-        return temp;
+        return Ok(temp);
     }
 
     // Compute the radius of circle formed by LOSC in the plane of 
@@ -118,7 +123,7 @@ pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f6
 
     // Circle disjoint from rim, so no intersection
     if rxy >= rcone_hi + rdisc2 {
-        return temp;
+        return Ok(temp);
     }
 
     // For the moment we pretend that the disc has no hole at its centre, so
@@ -275,7 +280,7 @@ pub fn disc_eclipse(iangle: f64, rdisc1: f64, rdisc2: f64, beta: f64, height: f6
         temp.push((ingress, egress));
     }
 
-    return temp
+    return Ok(temp)
 
 }
 

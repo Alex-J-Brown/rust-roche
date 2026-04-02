@@ -1,5 +1,6 @@
 use bulirsch::{self, Integrator};
 use crate::Vec3;
+use crate::errors::RocheError;
 use crate::x_l1;
 use pyo3::prelude::*;
 
@@ -7,15 +8,20 @@ use pyo3::prelude::*;
 /// strinit sets a particle just inside the L1 point with the 
 /// correct velocity as given in Lubow and Shu.
 ///
-/// \param q mass ratio = M2/M1
-/// \param r start position returned
-/// \param v start velocity returned
+/// Arguments:
+/// 
+/// * `q`: mass ratio = M2/M1
+/// 
+/// Returns:
+/// 
+/// * start position
+/// * start velocity
 ///
 #[pyfunction]
-pub fn strinit(q: f64) -> (Vec3, Vec3) {
+pub fn strinit(q: f64) -> Result<(Vec3, Vec3), RocheError> {
     
     const SMALL: f64 = 1.0e-5;
-    let rl1: f64 = x_l1(q);
+    let rl1: f64 = x_l1(q)?;
     let mu: f64 = q/(1.0+q);
     let a: f64 = (1.0-mu)/rl1.powi(3)+mu/(1.0-rl1).powi(3);
     let lambda1: f64 = (((a-2.0) + (a*(9.0*a-8.0)).sqrt())/2.0).sqrt();
@@ -24,7 +30,7 @@ pub fn strinit(q: f64) -> (Vec3, Vec3) {
     let r: Vec3 = Vec3::new(rl1-SMALL, -m1*SMALL, 0.0);
     let v: Vec3 = Vec3::new(-lambda1*SMALL, -lambda1*m1*SMALL, 0.0);
 
-    (r, v)
+    Ok((r, v))
 
 }
 
@@ -34,18 +40,22 @@ pub fn strinit(q: f64) -> (Vec3, Vec3) {
 /// it reaches a specified radius. It then returns with updated position and
 /// velocity. It is up to the user not to request a value that cannot be reached.
 ///
-/// \param q    mass ratio = M2/M1
-/// \param r    Initial and final position
-/// \param v    Initial and final velocity
-/// \param rad  Radius to aim for
-/// \param acc  Accuracy with which to place output point at rad.
-/// \param smax Largest time step allowed. It is possible that the
+/// Arguments:
+/// 
+/// * `q`:    mass ratio = M2/M1
+/// * `r`:    Initial and final position
+/// * `v`:    Initial and final velocity
+/// * `rad`:  Radius to aim for
+/// * `acc`:  Accuracy with which to place output point at rad.
+/// * `smax`: Largest time step allowed. It is possible that the
 /// routine could take such a large step that it misses
 /// the point when the stream is inside the requested
 /// radius. This allows one to control this. Typical
 /// value = 1.e-3.
 ///
-/// Returns time step taken
+/// Returns:
+/// 
+/// * time step taken
 ///
 pub fn stradv(q: f64, r: &mut Vec3, v: &mut Vec3, rad: f64, acc: f64, smax: f64) -> f64 {
 

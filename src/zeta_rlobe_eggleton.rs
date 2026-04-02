@@ -1,3 +1,4 @@
+use crate::errors::RocheError;
 use pyo3::prelude::*;
 ///
 /// zeta_rlobe_eggleton returns d log(rl) / d log (m2)
@@ -10,10 +11,14 @@ use pyo3::prelude::*;
 /// secondary star divided by separation according to Eggleton's formula.
 ///
 #[pyfunction]
-pub fn zeta_rlobe_eggleton(q: f64) -> f64 {
+pub fn zeta_rlobe_eggleton(q: f64) -> Result<f64, RocheError> {
+    if q <= 0. {
+        let message = format!("q = {} <= 0", q);
+        return Err(RocheError::ParameterError(message));
+    }
     let q1 = q.powf(1./3.);
     let loneq = (1. + q1).ln();
-    (1. + q)/3.*(2.*loneq-q1/(1.+q1))/(0.6*q1*q1*loneq)
+    Ok((1. + q)/3.*(2.*loneq-q1/(1.+q1))/(0.6*q1*q1*loneq))
 }
 
 
@@ -26,12 +31,16 @@ pub fn zeta_rlobe_eggleton(q: f64) -> f64 {
 /// \return Returns d zeta d q
 ///
 #[pyfunction]
-pub fn dzetadq_rlobe_eggleton(q: f64) -> f64 {
+pub fn dzetadq_rlobe_eggleton(q: f64) -> Result<f64, RocheError> {
+    if q <= 0. {
+        let message = format!("q = {} <= 0", q);
+        return Err(RocheError::ParameterError(message));
+    }
     let q1 = q.powf(1./3.);
     let q2 = q1*q1;
     let opq1 = 1. + q1;
     let loneq = opq1.ln();
     let denom = 0.6*q2 + loneq;
     let numer = 2.*loneq - q1/opq1;
-    numer/denom/3. + (1. + q)/3.*((1. + 2.*q1)/3./(q1*opq1).powi(2) - numer*(0.4/q1 + 1./(3.*q2*(1. + q1)))/denom)/denom
+    Ok(numer/denom/3. + (1. + q)/3.*((1. + 2.*q1)/3./(q1*opq1).powi(2) - numer*(0.4/q1 + 1./(3.*q2*(1. + q1)))/denom)/denom)
 }

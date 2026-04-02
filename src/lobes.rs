@@ -24,18 +24,18 @@ impl LineRoche {
         Self { q, star, dx, dy, cpot }
     }
 
-    fn cost(&self, lam: f64) -> (f64, f64){
+    fn cost(&self, lam: f64) -> Result<(f64, f64), RocheError>{
         let p = match self.star {
             Star::Primary => Vec3::new(lam*self.dx, lam*self.dy, 0.),
             Star::Secondary => Vec3::new(1.0+lam*self.dx, lam*self.dy, 0.),
         };
         // how far are we from root?
-        let f =  rpot(self.q, &p) - self.cpot;
+        let f =  rpot(self.q, &p)? - self.cpot;
         // gradient of potential at point
-        let dp = drpot(self.q, &p);
+        let dp = drpot(self.q, &p)?;
         // dot product of gradient with line direction - gives scalar gradient in direction of line
         let d = self.dx*dp.x + self.dy*dp.y;
-        (f, d)
+        Ok((f, d))
     }
 }
 
@@ -45,9 +45,9 @@ pub fn lobe1(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     const FRAC: f64 = 1.0e-6;
 
     // Compute the potential at the inner Lagrange point
-    let rl1 = x_l1(q);
+    let rl1 = x_l1(q)?;
     let p: Vec3 = Vec3::new(rl1, 0.0, 0.0);
-    let cpot: f64 = rpot(q, &p);
+    let cpot: f64 = rpot(q, &p)?;
 
     let mut xarr: Vec<f64> = Vec::with_capacity(n as usize);
     let mut yarr: Vec<f64> = Vec::with_capacity(n as usize);
@@ -61,10 +61,7 @@ pub fn lobe1(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
             let dx = theta.cos();
             let dy = theta.sin();
             let line = LineRoche::new(q, Star::Primary, dx, dy, cpot);
-            let lam = match rtsafe(rl1/4.0, rl1, |lam| line.cost(lam), FRAC) {
-                Ok(lam) => lam,
-                Err(e) => return Err(e),
-            };
+            let lam = rtsafe(rl1/4.0, rl1, |lam| line.cost(lam), FRAC)?;
             xarr.push(lam*dx);
             yarr.push(lam*dy);
         }
@@ -79,9 +76,9 @@ pub fn lobe2(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     const FRAC: f64 = 1.0e-6;
 
     // Compute the potential at the inner Lagrange point
-    let rl1 = x_l1(q);
+    let rl1 = x_l1(q)?;
     let p: Vec3 = Vec3::new(rl1, 0.0, 0.0);
-    let cpot: f64 = rpot(q, &p);
+    let cpot: f64 = rpot(q, &p)?;
     let upper = 1.0 - rl1;
     let lower = upper/4.0;
     let mut xarr: Vec<f64> = Vec::with_capacity(n as usize);
@@ -121,7 +118,7 @@ pub fn rtsafe<F>(
     xacc: f64,
 ) -> Result<f64, RocheError>
 where
-    F: Fn(f64) -> (f64, f64),
+    F: Fn(f64) -> Result<(f64, f64), RocheError>,
 {
     let mut xlo = x1;
     let mut xhi = x2;
@@ -129,8 +126,8 @@ where
     let mut fh;
     let mut df;
     const MAXITER: i32 = 100;
-    (fl, _) = func(xlo);
-    (fh, _) = func(xhi);
+    (fl, _) = func(xlo)?;
+    (fh, _) = func(xhi)?;
 
     if (fl > 0.0 && fh > 0.0) || (fl < 0.0 && fh < 0.0) {
         return Err(RocheError::RtsafeError("Root must be bracketed in rtsafe".to_string()));
@@ -153,7 +150,7 @@ where
     let mut dxold = (xhi - xlo).abs();
     let mut dx = dxold;
     let mut f;
-    (f, df) = func(rts);
+    (f, df) = func(rts)?;
     let mut iter = 0;
     while iter < MAXITER {
         if ((rts - xhi) * df - f) * ((rts - xlo) * df - f) >= 0.0 
@@ -180,7 +177,7 @@ where
             return Ok(rts);
         }
 
-        (f, df) = func(rts);
+        (f, df) = func(rts)?;
         if f < 0.0 {
             xlo = rts;
         } else {

@@ -33,17 +33,17 @@ pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64
         Star::Secondary => Vec3::cofm2(),
     };
 
-    let rp: fn(f64, f64, &Vec3) -> f64 = match star {
+    let rp: fn(f64, f64, &Vec3) -> Result<f64, RocheError> = match star {
         Star::Primary => rpot1,
         Star::Secondary => rpot2,
     };
 
-    let drp: fn(f64, f64, &Vec3) -> Vec3 = match star {
+    let drp: fn(f64, f64, &Vec3) -> Result<Vec3, RocheError> = match star {
         Star::Primary => drpot1,
         Star::Secondary => drpot2,
     };
 
-    let mut tref: f64 = rp(q, spin, &(cofm + rref*direction));
+    let mut tref: f64 = rp(q, spin, &(cofm + rref*direction))?;
     if tref < pref {
         let message = format!(
             "point at reference radius {} appears to be at lower potential {} than the reference potential {}", rref, tref, pref
@@ -59,7 +59,7 @@ pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64
     let mut i: i32 = 0;
     while i < MAXSEARCH && tref > pref {
         r1 = r2/2.;
-        tref = rp(q, spin, &(cofm + r1*direction));
+        tref = rp(q, spin, &(cofm + r1*direction))?;
         if tref > pref {
             r2 = r1;
         }
@@ -75,7 +75,7 @@ pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64
     while r2 - r1 > acc && nchop < MAXCHOP {
         r = (r1 + r2)/2.;
         pvec = cofm + r*direction;
-        if rp(q, spin, &pvec) < pref {
+        if rp(q, spin, &pvec)? < pref {
             r1 = r;
         }else {
             r2 = r;
@@ -87,7 +87,7 @@ pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64
     }
     r = (r1 + r2)/2.;
     pvec = cofm + r*direction;
-    let mut dvec: Vec3 = drp(q, spin, &pvec);
+    let mut dvec: Vec3 = drp(q, spin, &pvec)?;
     let g = dvec.length();
     dvec /= g;
     Ok((pvec, dvec, r, g))

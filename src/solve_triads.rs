@@ -42,14 +42,8 @@ pub fn findi(q: f64, dphi: f64, acc: f64, delta_i: f64) -> Result<f64, RocheErro
     let r: Vec3 = Vec3::new(0.0, 0.0, 0.0);
     
     // eclipsed at ilo?
-    let elo: bool = match fblink::fblink(q, Star::Secondary, 1.0, 1.0, acc, &earth1, &r) {
-        Ok(result) => result,
-        Err(_) => return Err(RocheError::DbrentError),
-    };
-    let ehi: bool = match fblink::fblink(q, Star::Secondary, 1.0, 1.0, acc, &earth2, &r) {
-        Ok(result) => result,
-        Err(_) => return Err(RocheError::DbrentError),
-    };
+    let elo: bool = fblink::fblink(q, Star::Secondary, 1.0, 1.0, acc, &earth1, &r)?;
+    let ehi: bool = fblink::fblink(q, Star::Secondary, 1.0, 1.0, acc, &earth2, &r)?;
     if elo && ehi {
         return Ok(-2.0);
     } else if !elo && !ehi {
@@ -58,10 +52,7 @@ pub fn findi(q: f64, dphi: f64, acc: f64, delta_i: f64) -> Result<f64, RocheErro
     while (ihi - ilo) > delta_i {
         let imid: f64 = (ilo + ihi)/2.0;
         let earth_mid: Vec3 = set_earth::set_earth_iangle(imid, phi);
-        let emid: bool = match fblink::fblink(q, Star::Secondary, 1.0, 1.0, acc, &earth_mid, &r) {
-            Ok(result) => result,
-            Err(_) => return Err(RocheError::DbrentError),
-        };
+        let emid: bool = fblink::fblink(q, Star::Secondary, 1.0, 1.0, acc, &earth_mid, &r)?;
         if emid {
             ihi = imid;
         } else {
@@ -103,14 +94,8 @@ pub fn findq(i: f64, dphi: f64, acc: f64, delta_q: f64) -> Result<f64, RocheErro
     let earth: Vec3 = set_earth::set_earth_iangle(i, phi);
     let r: Vec3 = Vec3::new(0.0, 0.0, 0.0);
 
-    let elo: bool = match fblink::fblink(qlo, Star::Secondary, 1.0, 1.0, acc, &earth, &r) {
-        Ok(result) => result,
-        Err(_) => return Err(RocheError::DbrentError),
-    };
-    let ehi: bool = match fblink::fblink(qhi, Star::Secondary, 1.0, 1.0, acc, &earth, &r) {
-        Ok(result) => result,
-        Err(_) => return Err(RocheError::DbrentError),
-    };
+    let elo: bool = fblink::fblink(qlo, Star::Secondary, 1.0, 1.0, acc, &earth, &r)?;
+    let ehi: bool = fblink::fblink(qhi, Star::Secondary, 1.0, 1.0, acc, &earth, &r)?;
     if elo && ehi {
         return Ok(-2.0);
     } else if !elo && !ehi {
@@ -118,10 +103,7 @@ pub fn findq(i: f64, dphi: f64, acc: f64, delta_q: f64) -> Result<f64, RocheErro
     }
     while (qhi - qlo) > delta_q {
         let qmid: f64 = (qlo + qhi)/2.0;
-        let emid: bool = match fblink::fblink(qmid, Star::Secondary, 1.0, 1.0, acc, &earth, &r) {
-            Ok(result) => result,
-            Err(_) => return Err(RocheError::DbrentError),
-        };
+        let emid: bool = fblink::fblink(qmid, Star::Secondary, 1.0, 1.0, acc, &earth, &r)?;
         if emid {
             qhi = qmid;
         } else {
@@ -142,7 +124,7 @@ pub fn findq(i: f64, dphi: f64, acc: f64, delta_q: f64) -> Result<f64, RocheErro
 /// \param delta the accuracy to use in ingress_egress.
 /// \return the phase width of the white dwarf eclipse, or -1 if the white dwarf is not eclipsed.
 ///
-pub fn findphi(q: f64, iangle: f64, delta: f64) -> f64 {
+pub fn findphi(q: f64, iangle: f64, delta: f64) -> Result<f64, RocheError> {
 
     let r: Vec3 = Vec3::new(0.0, 0.0, 0.0);
     let mut ingress: f64 = 0.0;
@@ -150,9 +132,9 @@ pub fn findphi(q: f64, iangle: f64, delta: f64) -> f64 {
     //q: f64, star: Star, spin: f64, ffac: f64, iangle: f64, delta: f64, r: &Vec3, ingress: &mut f64, egress: &mut f64
     let status: bool = ingress_egress::ingress_egress(
         q, Star::Secondary, 1.0, 1.0, iangle, delta, &r, &mut ingress, &mut egress
-    );
+    )?;
     if !status {
-        return -1.0;
+        return Ok(-1.0);
     }
-    egress-ingress
+    Ok(egress-ingress)
 }

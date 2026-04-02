@@ -31,7 +31,7 @@ pub fn wdphases(q: f64, iangle: f64, r1: f64, r2: f64, ntheta: i32) -> Result<(f
     if r2 <= 0.0{
         ffac = 1.0;
     } else {
-        ffac = r2/(1.0-x_l1(q));
+        ffac = r2/(1.0-x_l1(q)?);
     }
     // fourth contact
     let mut phi4lo: f64 = 0.0;

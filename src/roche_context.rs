@@ -1,5 +1,5 @@
-use std::panic;
 use std::f64::consts::TAU;
+use crate::errors::RocheError;
 use crate::{Vec3, Star, Etype};
 use crate::{rpot_val, rpot_grad, rpot1, rpot2, drpot1, drpot2};
 use crate::{pot_min, dbrent, x_l1, x_l1_1, x_l1_2, x_l2, x_l3};
@@ -22,58 +22,57 @@ pub struct RocheContext {
 }
 
 impl RocheContext {
-    pub fn new(q: f64, star: Star, spin: f64) -> Self {
-        if q <= 0. {
-            panic!("q = {} <= 0", q);
-        }
+    pub fn new(q: f64, star: Star, spin: f64) -> Result<Self, RocheError> {
+
         let x_l1: f64 = match star {
-            Star::Primary => x_l1_1(q, spin),
-            Star::Secondary => x_l1_2(q, spin),
+            Star::Primary => x_l1_1(q, spin)?,
+            Star::Secondary => x_l1_2(q, spin)?,
         };
-        Self { q, star, spin, x_l1 }
+        Ok(Self { q, star, spin, x_l1 })
     }
 
-    pub fn potential(&self, earth: &Vec3, p:&Vec3, lam: f64) -> f64 {
-        rpot_val(self.q, self.star, self.spin, earth, p, lam)
-    }
-
-
-    pub fn gradient(&self, earth: &Vec3, p: &Vec3, lam: f64) -> (f64, f64) {
-        let (dp, dl) = rpot_grad(self.q, self.star, self.spin, earth, p, lam);
-        (dp, dl)
+    pub fn potential(&self, earth: &Vec3, p:&Vec3, lam: f64) -> Result<f64, RocheError> {
+        Ok(rpot_val(self.q, self.star, self.spin, earth, p, lam)?)
     }
 
 
-    pub fn potential_grad(&self, earth: &Vec3, p: &Vec3, lam: f64) -> (f64, f64, f64) {
-        let f = self.potential(earth, p, lam);
-        let (dp, dl) = rpot_grad(self.q, self.star, self.spin, earth, p, lam);
-        (f, dp, dl)
+    pub fn gradient(&self, earth: &Vec3, p: &Vec3, lam: f64) -> Result<(f64, f64), RocheError> {
+        let (dp, dl) = rpot_grad(self.q, self.star, self.spin, earth, p, lam)?;
+        Ok((dp, dl))
     }
 
 
-    pub fn ref_sphere(&self, ffac: f64) -> (f64, f64) {
+    pub fn potential_grad(&self, earth: &Vec3, p: &Vec3, lam: f64) -> Result<(f64, f64, f64), RocheError> {
+        let f = self.potential(earth, p, lam)?;
+        let (dp, dl) = rpot_grad(self.q, self.star, self.spin, earth, p, lam)?;
+        Ok((f, dp, dl))
+    }
+
+
+    pub fn ref_sphere(&self, ffac: f64) -> Result<(f64, f64), RocheError> {
         let tref: f64;
         let rref: f64;
         let pref: f64;
         if self.star == Star::Primary {
             tref = self.x_l1;
             rref = tref * 1.0_f64.min(1.001*ffac);
-            pref = rpot1(self.q, self.spin, &Vec3 { x: ffac*tref, y: 0.0, z: 0.0 });
-            (rref, pref)
+            pref = rpot1(self.q, self.spin, &Vec3 { x: ffac*tref, y: 0.0, z: 0.0 })?;
+            Ok((rref, pref))
         } else if self.star == Star::Secondary {
             tref = 1.0 - self.x_l1;
             rref = tref * 1.0_f64.min(1.001*ffac);
-            pref = rpot2(self.q, self.spin, &Vec3 { x: 1.0 - ffac*tref, y: 0.0, z: 0.0 });
-            (rref, pref)
+            pref = rpot2(self.q, self.spin, &Vec3 { x: 1.0 - ffac*tref, y: 0.0, z: 0.0 })?;
+            Ok((rref, pref))
         } else {
-            panic!("star is not an instance of Star")
+            let message = format!("{:?} is not and instance of Star.", self.star);
+            return Err(RocheError::ParameterError(message));
         }
     }
 
 
-    pub fn fblink(&self, ffac: f64, acc: f64, earth: &Vec3, p: &Vec3) -> Result<bool, &'static str> {
+    pub fn fblink(&self, ffac: f64, acc: f64, earth: &Vec3, p: &Vec3) -> Result<bool, RocheError> {
 
-        let (rref, pref) = self.ref_sphere(ffac);
+        let (rref, pref) = self.ref_sphere(ffac)?;
 
         let cofm: Vec3 = match self.star {
             Star::Primary => Vec3::cofm1(),
@@ -92,7 +91,7 @@ impl RocheContext {
 
         // Create function objects for 1D minimisation in lambda direction
         let func = |lam: f64| {
-            self.potential(earth, p, lam)
+            Ok(self.potential(earth, p, lam)?)
         };
 
         // Now try to bracket a minimum. We just crudely compute function at regularly spaced intervals filling in the
@@ -112,15 +111,15 @@ impl RocheContext {
 
             for _ in 0..nstep {
 
-                flam = func(lam);
+                flam = func(lam)?;
                 if flam <= pref {
                     return Ok(true);
                 }
 
                 // Calculate these as late as possible because they may often not be needed
                 if nstep == 1 {
-                    f1 = func(lam1);
-                    f2 = func(lam2);
+                    f1 = func(lam1)?;
+                    f2 = func(lam2)?;
                 }
 
                 if flam < f1 && flam < f2 {
@@ -142,8 +141,8 @@ impl RocheContext {
             // Possible that multiple minima could cause problems but I have
             // never seen this in practice.
             let dfunc = |lam: f64| {
-                let (_dp, dl) = self.gradient(earth, p, lam);
-                dl
+                let (_dp, dl) = self.gradient(earth, p, lam)?;
+                Ok(dl)
             };
 
             let (_xmin, flam) = dbrent(lam1, lam, lam2, |x| func(x), |x| dfunc(x), acc, true, pref)?;
@@ -159,7 +158,7 @@ impl RocheContext {
     }
 
 
-    pub fn face(&self, direction: Vec3, rref: f64, pref: f64, acc: f64) -> (Vec3, Vec3, f64, f64) {
+    pub fn face(&self, direction: Vec3, rref: f64, pref: f64, acc: f64) -> Result<(Vec3, Vec3, f64, f64), RocheError> {
 
         let mut pvec: Vec3;
         let mut r: f64;
@@ -169,19 +168,22 @@ impl RocheContext {
             Star::Secondary => Vec3::cofm2(),
         };
 
-        let rp: fn(f64, f64, &Vec3) -> f64 = match self.star {
+        let rp: fn(f64, f64, &Vec3) -> Result<f64, RocheError> = match self.star {
             Star::Primary => rpot1,
             Star::Secondary => rpot2,
         };
 
-        let drp: fn(f64, f64, &Vec3) -> Vec3 = match self.star {
+        let drp: fn(f64, f64, &Vec3) -> Result<Vec3, RocheError> = match self.star {
             Star::Primary => drpot1,
             Star::Secondary => drpot2,
         };
 
-        let mut tref: f64 = rp(self.q, self.spin, &(cofm + rref*direction));
+        let mut tref: f64 = rp(self.q, self.spin, &(cofm + rref*direction))?;
         if tref < pref {
-            panic!("stuff")
+            let message = format!(
+            "point at reference radius {} appears to be at lower potential {} than the reference potential {}", rref, tref, pref
+            );
+            return Err(RocheError::FaceError(message));
         }
 
         let mut r1: f64 = rref/2.;
@@ -192,14 +194,15 @@ impl RocheContext {
         let mut i: i32 = 0;
         while i < MAXSEARCH && tref > pref {
             r1 = r2/2.;
-            tref = rp(self.q, self.spin, &(cofm + r1*direction));
+            tref = rp(self.q, self.spin, &(cofm + r1*direction))?;
             if tref > pref {
                 r2 = r1;
             }
             i+=1;
         }
         if tref > pref {
-            panic!("other stuff");
+            let message = "could not find a radius with a potential below the reference potential; probably bad inputs.";
+            return Err(RocheError::FaceError(message.to_string()));
         }
 
         const MAXCHOP: i32 = 100;
@@ -207,7 +210,7 @@ impl RocheContext {
         while r2 - r1 > acc && nchop < MAXCHOP {
             r = (r1 + r2)/2.;
             pvec = cofm + r*direction;
-            if rp(self.q, self.spin, &pvec) < pref {
+            if rp(self.q, self.spin, &pvec)? < pref {
                 r1 = r;
             }else {
                 r2 = r;
@@ -215,21 +218,21 @@ impl RocheContext {
             nchop += 1;
         }
         if nchop == MAXCHOP {
-            panic!("even more stuff");
+            return Err(RocheError::FaceError("reached maximum number of binary chops".to_string()));
         }
         r = (r1 + r2)/2.;
         pvec = cofm + r*direction;
-        let mut dvec: Vec3 = drp(self.q, self.spin, &pvec);
+        let mut dvec: Vec3 = drp(self.q, self.spin, &pvec)?;
         let g = dvec.length();
         dvec /= g;
-        return (pvec, dvec, r, g)
+        return Ok((pvec, dvec, r, g))
     }
 
 
-    pub fn ingress_egress(&self, ffac: f64, iangle: f64, delta: f64, r: &Vec3, ingress: &mut f64, egress: &mut f64) -> bool {
+    pub fn ingress_egress(&self, ffac: f64, iangle: f64, delta: f64, r: &Vec3, ingress: &mut f64, egress: &mut f64) -> Result<bool, RocheError> {
         let rref: f64;
         let pref: f64;
-        (rref, pref) = self.ref_sphere(ffac);
+        (rref, pref) = self.ref_sphere(ffac)?;
         let ri: f64 = iangle.to_radians();
         let (sini, cosi) = ri.sin_cos();
 
@@ -249,7 +252,7 @@ impl RocheContext {
             
             let acc: f64 = 2.*(2.*TAU*(lam2 - lam1)*delta).sqrt();
 
-            if self.pot_min(cosi, sini, r, phi1, phi2, lam1, lam2, rref, pref, acc, &mut phi, &mut lam) {
+            if self.pot_min(cosi, sini, r, phi1, phi2, lam1, lam2, rref, pref, acc, &mut phi, &mut lam)? {
 
                 let mut pin: f64 = phi;
                 let mut pout: f64 = phi1;
@@ -281,18 +284,18 @@ impl RocheContext {
                 if *egress < *ingress {
                     *egress += 1.0;
                 }
-                return true;
+                return Ok(true);
             } else {
-                return false;
+                return Ok(false);
             }
         } else {
-            return false;
+            return Ok(false);
         }
 
     }
 
 
-    pub fn star_eclipse(&self, r: f64, ffac: f64, iangle: f64, posn: &Vec3, delta: f64, roche: bool, star: Star, eclipses: &mut Etype) -> () {
+    pub fn star_eclipse(&self, r: f64, ffac: f64, iangle: f64, posn: &Vec3, delta: f64, roche: bool, star: Star, eclipses: &mut Etype) -> Result<(), RocheError> {
         let ri = iangle.to_radians();
         let (sini, cosi) = ri.sin_cos();
         let cofm = match star {
@@ -304,38 +307,39 @@ impl RocheContext {
         let mut ingress: f64 = 0.0;
         let mut egress: f64 = 0.0;
         // let mut eclipses = Etype::new();
-        if (roche && self.ingress_egress(ffac, iangle, delta, &posn, &mut ingress, &mut egress)) ||
+        if (roche && self.ingress_egress(ffac, iangle, delta, &posn, &mut ingress, &mut egress)?) ||
             (!roche && sphere_eclipse(cosi, sini, &posn, &cofm, r, &mut ingress, &mut egress, &mut lam1, &mut lam2)) {
             eclipses.push((ingress, egress));
         }
+        Ok(())
     }
 
 
-    pub fn pot_min(&self, cosi: f64, sini: f64, p: &Vec3, phi1: f64, phi2: f64, lam1: f64, lam2: f64, rref: f64, pref: f64, acc: f64, phi: &mut f64, lam: &mut f64) -> bool {
-        pot_min(self.q, self.star, self.spin, cosi, sini, p, phi1, phi2, lam1, lam2, rref, pref, acc, phi, lam)
+    pub fn pot_min(&self, cosi: f64, sini: f64, p: &Vec3, phi1: f64, phi2: f64, lam1: f64, lam2: f64, rref: f64, pref: f64, acc: f64, phi: &mut f64, lam: &mut f64) -> Result<bool, RocheError> {
+        Ok(pot_min(self.q, self.star, self.spin, cosi, sini, p, phi1, phi2, lam1, lam2, rref, pref, acc, phi, lam)?)
     }
 
 
-    pub fn x_l1(&self) -> f64 {
-        x_l1(self.q)
+    pub fn x_l1(&self) -> Result<f64, RocheError> {
+        Ok(x_l1(self.q)?)
     }
 
 
-    pub fn x_l1_asyncronous(&self) -> f64 {
+    pub fn x_l1_asyncronous(&self) -> Result<f64, RocheError> {
         match self.star {
-            Star::Primary => x_l1_1(self.q, self.spin),
-            Star::Secondary => x_l1_2(self.q, self.spin),
+            Star::Primary => Ok(x_l1_1(self.q, self.spin)?),
+            Star::Secondary => Ok(x_l1_2(self.q, self.spin)?),
         }
     }
 
 
-    pub fn x_l2(&self) -> f64 {
-        x_l2(self.q)
+    pub fn x_l2(&self) -> Result<f64, RocheError> {
+        Ok(x_l2(self.q)?)
     }
 
 
-    pub fn x_l3(&self) -> f64 {
-        x_l3(self.q)
+    pub fn x_l3(&self) -> Result<f64, RocheError> {
+        Ok(x_l3(self.q)?)
     }
 
 }
