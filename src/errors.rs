@@ -11,7 +11,9 @@ pub enum RocheError {
     // error in Face function
     FaceError(String),
     // error in rtsafe function
-    RtsafeError(String)
+    RtsafeError(String),
+    // error in wd_phases function
+    WdphasesError(String)
 }
 
 impl std::error::Error for RocheError {}
@@ -23,6 +25,7 @@ impl fmt::Display for RocheError {
             RocheError::ParameterError(msg) => write!(f, "{}", msg),
             RocheError::FaceError(msg) => write!(f, "{}", msg),
             RocheError::RtsafeError(msg) => write!(f, "{}", msg),
+            RocheError::WdphasesError(msg) => write!(f, "{}", msg),
         }
     }
 }
@@ -34,6 +37,7 @@ impl std::convert::From<RocheError> for PyErr {
             RocheError::ParameterError(_) => PyValueError::new_err(err.to_string()),
             RocheError::FaceError(_) => PyRuntimeError::new_err(err.to_string()),
             RocheError::RtsafeError(_) => PyRuntimeError::new_err(err.to_string()), 
+            RocheError::WdphasesError(_) => PyRuntimeError::new_err(err.to_string()), 
         }
     }
 }

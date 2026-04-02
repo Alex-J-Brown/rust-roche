@@ -66,6 +66,10 @@ pub mod lobes;
 pub use lobes::lobe1;
 pub use lobes::lobe2;
 
+pub mod wdphases;
+pub use wdphases::*;
+
+
 #[pyclass(from_py_object, eq, eq_int)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Star {
@@ -119,6 +123,7 @@ fn roche(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(solve_triads::findphi, m)?)?;
     m.add_function(wrap_pyfunction!(lobes::lobe1, m)?)?;
     m.add_function(wrap_pyfunction!(lobes::lobe2, m)?)?;
+    m.add_function(wrap_pyfunction!(wdphases::wdphases, m)?)?;
     Ok(())
 }
 
