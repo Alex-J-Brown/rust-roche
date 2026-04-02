@@ -1,6 +1,7 @@
 use std::f64::consts::TAU;
 use crate::{Vec3, Star};
 use crate::{ref_sphere, sphere_eclipse, set_earth, pot_min, fblink};
+use pyo3::prelude::*;
 
 /// 
 /// ingress_egress tests for whether a given point is eclipsed by a Roche-distorted star. If 
@@ -81,4 +82,29 @@ pub fn ingress_egress(q: f64, star: Star, spin: f64, ffac: f64, iangle: f64, del
         return false;
     }
 
+}
+
+// wrapper for python library, avoiding mutable references
+
+/// 
+/// ingress_egress tests for whether a given point is eclipsed by a Roche-distorted star. If 
+/// it is, it computes the ingress and egress phases using a binary chop. The accuracy on the 
+/// phase should be set to be below the expected uncertainties of the phases of your data.
+///
+/// \param q       the mass ratio = M2/M1.
+/// \param star    which star, primary or secondary, is doing the eclipsing
+/// \param spin    ratio of spin to orbit of eclipsing star
+/// \param ffac    linear filling factor
+/// \param iangle  inclination angle
+/// \param delta   the accuracy in phase wanted.
+/// \param r       position vector of point of interest.
+/// \return (eclipsed, ingress_phase, egress_phase)
+/// 
+#[pyfunction]
+#[pyo3(name = "ingress_egress")]
+pub fn ingress_egress_wrapper(q: f64, star: Star, spin: f64, ffac: f64, iangle: f64, delta: f64, r: &Vec3) -> (bool, f64, f64) {
+    let mut ingress: f64 = 0.0;
+    let mut egress: f64 = 0.0;
+    let eclipsed: bool = ingress_egress(q, star, spin, ffac, iangle, delta, r, &mut ingress, &mut egress);
+    (eclipsed, ingress, egress)
 }

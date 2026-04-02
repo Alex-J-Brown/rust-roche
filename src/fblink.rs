@@ -1,5 +1,7 @@
 use crate::{Vec3, Star};
 use crate::{rpot_val, rpot_grad, ref_sphere, sphere_eclipse_vector, dbrent};
+use crate::errors::RocheError;
+use pyo3::prelude::*;
 
 
 /// 
@@ -18,7 +20,8 @@ use crate::{rpot_val, rpot_grad, ref_sphere, sphere_eclipse_vector, dbrent};
 /// \param p      point of interest
 /// \return true if minimum potential is below the potential at stellar surface
 ///
-pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, p: &Vec3) -> Result<bool, &'static str> {
+#[pyfunction]
+pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, p: &Vec3) -> Result<bool, RocheError> {
 
     let (rref, pref) = ref_sphere(q, star, spin, ffac);
 
@@ -93,7 +96,11 @@ pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, 
             dl
         };
 
-        let (_xmin, flam) = dbrent(lam1, lam, lam2, |x| func(x), |x| dfunc(x), acc, true, pref)?;
+        // this may fail
+        let (_xmin, flam) =  match dbrent(lam1, lam, lam2, |x| func(x), |x| dfunc(x), acc, true, pref){
+            Ok(res) => res,
+            Err(_) =>  return Err(RocheError::DbrentError),
+        };
 
         Ok(flam < pref)
     } else {

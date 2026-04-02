@@ -1,6 +1,6 @@
 use crate::{Vec3, Star};
 use crate::{x_l1_1, x_l1_2, rpot1, rpot2};
-
+use pyo3::prelude::*;
 
 ///
 /// ref_sphere computes the radius of a reference sphere just outside a Roche distorted star
@@ -16,14 +16,16 @@ use crate::{x_l1_1, x_l1_2, rpot1, rpot2};
 /// \param star specifies which star, primary or secondary is under consideration
 /// \param spin ratio spin/orbital frequencies to allow for asynchronism
 /// \param ffac linear filling factor.
-/// \param rref radius of the reference sphere. This will be 0.1% expanded above the minimum
+/// \return rref radius of the reference sphere. This will be 0.1% expanded above the minimum
 /// size to avoid round off bugs, if it remains within Roche lobe.
-/// \param pref reference potential. Roche potential on surface of distorted star.
+/// \return pref reference potential. Roche potential on surface of distorted star.
 ///
+#[pyfunction]
 pub fn ref_sphere(q: f64, star: Star, spin: f64, ffac: f64) -> (f64, f64) {
     let tref: f64;
     let rref: f64;
     let pref: f64;
+    
     if star == Star::Primary {
         tref = x_l1_1(q, spin);
         rref = tref * 1.0_f64.min(1.001*ffac);

@@ -1,7 +1,7 @@
 use bulirsch::{self, Integrator};
 use crate::Vec3;
 use crate::x_l1;
-
+use pyo3::prelude::*;
 
 /// 
 /// strinit sets a particle just inside the L1 point with the 
@@ -11,6 +11,7 @@ use crate::x_l1;
 /// \param r start position returned
 /// \param v start velocity returned
 ///
+#[pyfunction]
 pub fn strinit(q: f64) -> (Vec3, Vec3) {
     
     const SMALL: f64 = 1.0e-5;
@@ -127,6 +128,33 @@ pub fn stradv(q: f64, r: &mut Vec3, v: &mut Vec3, rad: f64, acc: f64, smax: f64)
 
 }
 
+// wrapper for python library, avoiding mutable references
+
+/// 
+/// stradv advances a particle of given position and velocity until
+/// it reaches a specified radius. It then returns with updated position and
+/// velocity. It is up to the user not to request a value that cannot be reached.
+///
+/// \param q    mass ratio = M2/M1
+/// \param r    Initial position
+/// \param v    Initial velocity
+/// \param rad  Radius to aim for
+/// \param acc  Accuracy with which to place output point at rad.
+/// \param smax Largest time step allowed. It is possible that the
+/// routine could take such a large step that it misses
+/// the point when the stream is inside the requested
+/// radius. This allows one to control this. Typical
+/// value = 1.e-3.
+/// \returns (timestep, new position, new velocity)
+///
+#[pyfunction]
+#[pyo3(name = "stradv")]
+pub fn stradv_wrapper(q: f64, r: &Vec3, v: &Vec3, rad: f64, acc: f64, smax: f64) -> (f64, Vec3, Vec3) {
+    let mut r_mut = *r;
+    let mut v_mut = *v;
+    let timestep = stradv(q, &mut r_mut, &mut v_mut, rad, acc, smax);
+    (timestep, r_mut, v_mut)
+}
 
 ///
 /// rocacc calculates and returns the acceleration (in the rotating frame)
@@ -136,6 +164,7 @@ pub fn stradv(q: f64, r: &mut Vec3, v: &mut Vec3, rad: f64, acc: f64, smax: f64)
 /// \param r position, scaled in units of separation.
 /// \param v velocity, scaled in units of separation
 ///
+#[pyfunction]
 pub fn rocacc(q: f64, r: &Vec3, v: &Vec3) -> (f64, f64, f64) {
 
 
