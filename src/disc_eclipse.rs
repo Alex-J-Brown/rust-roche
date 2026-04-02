@@ -30,6 +30,7 @@ pub enum Circle {
 /// * `rdisc2`: outer disc radius, units of separation
 /// * `beta`: exponent of flaring, so that the height scales as r**beta. beta should be >= 1
 /// * `height disc`: height at unit radius in disc (even if it does not exist)
+/// 
 /// Returns:
 /// 
 /// * a vector of ingress and egress phase pairs during which the point in question is eclipsed.

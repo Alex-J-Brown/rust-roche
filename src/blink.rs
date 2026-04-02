@@ -12,14 +12,18 @@ use crate::x_l1;
 /// NB Note that this version of !!emph{blink} works in units of binary separation
 /// NOT the inner lagrangian point distance.
 ///
-/// \param q the mass ratio = M2/M1.
-/// \param r the position vector (in units of binary separation)
-/// \param e unit vector pointing towards Earth. Standardly this is (sini(i)*cos(phi),-sin(i)*sin(phi),cos(i))
-/// \param acc step size parameter. acc specifies the size of steps taken when trying to see if the 
+/// Arguments:
+/// 
+/// * `q`: the mass ratio = M2/M1.
+/// * `r`: the position vector (in units of binary separation)
+/// * `e`: unit vector pointing towards Earth. Standardly this is (sini(i)*cos(phi),-sin(i)*sin(phi),cos(i))
+/// * `acc`: step size parameter. acc specifies the size of steps taken when trying to see if the 
 /// photon path goes inside the Roche lobe. The step size is roughly acc times the radius of the lobe filling star. 
 /// This means that the photon path could mistakenly not be occulted if it passed less than about (acc**2)/8 of 
 /// the radius below the surface of the Roche lobe. acc of order 0.1 should therefore do the job.
-/// \return false = not eclipsed; true = eclipsed.
+/// Returns:
+/// 
+/// * false = not eclipsed; true = eclipsed.
 ///
 pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> Result<bool, RocheError> {
 

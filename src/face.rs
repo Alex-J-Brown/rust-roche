@@ -7,17 +7,22 @@ use pyo3::prelude::*;
 /// 'face' computes the position and orientation of a face on either star in a binary assuming Roche geometry given
 /// a direction, a reference radius and a potential.
 ///
-/// \param q    the mass ratio = M2/M1.
-/// \param star specifies which star, primary or secondary is under consideration.
-/// \param spin ratio of star in questions spin to the orbital frequency
-/// \param dirn the direction (unit) vector from the centre of mass of the secondary to the face in question.
-/// \param rref reference radius. This is a radius large enough to guarantee crossing of the reference potential. See ref_sphere
-/// \param pref reference potential. This defines the precise location of the face.
-/// \param acc  location accuracy (units of separation)
-/// \return pvec position vector of centre of face (position vector in standard binary coordinates), returned
-/// \return dvec orientation vector perpendicular to face, returned
-/// \return r    distance from centre of mass of star, returned
-/// \return g    magnitude of gravity at face, returned
+/// Arguments:
+/// 
+/// * `q`:    the mass ratio = M2/M1.
+/// * `star`: specifies which star, primary or secondary is under consideration.
+/// * `spin`: ratio of star in questions spin to the orbital frequency
+/// * `dirn`: the direction (unit) vector from the centre of mass of the secondary to the face in question.
+/// * `rref`: reference radius. This is a radius large enough to guarantee crossing of the reference potential. See ref_sphere
+/// * `pref`: reference potential. This defines the precise location of the face.
+/// * `acc`:  location accuracy (units of separation)
+/// 
+/// Returns:
+/// 
+/// * pvec position vector of centre of face (position vector in standard binary coordinates), returned
+/// * dvec orientation vector perpendicular to face, returned
+/// * r    distance from centre of mass of star, returned
+/// * g    magnitude of gravity at face, returned
 /// \exception The routine throws exceptions if it cannot bracket the reference potential. This can occur if the reference radius fails to enclose
 /// the face in question, or if the face is so deep in the potential that the initial search fails to reach it. Finally if acc is set too low an
 /// exception may be thrown if too many binary chops occur. The behaviour at the L1 point is undefined so do not try to call it there.
