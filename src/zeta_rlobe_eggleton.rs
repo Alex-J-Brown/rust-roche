@@ -5,9 +5,14 @@ use pyo3::prelude::*;
 /// where rl is Peter Eggleton's formula for the volume-averaged 
 /// Roche lobe radius divided by the orbital separation. This assumes
 /// that m1+m2 = constant.
-///
-/// \param q mass ratio = M2/M1
-/// \return Returns d log(rl) / d log (m2) where rl = Roche lobe radius of
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio = M2/M1
+/// 
+/// Returns:
+/// 
+/// * d log(rl) / d log (m2) where rl = Roche lobe radius of
 /// secondary star divided by separation according to Eggleton's formula.
 ///
 #[pyfunction]
@@ -27,8 +32,13 @@ pub fn zeta_rlobe_eggleton(q: f64) -> Result<f64, RocheError> {
 /// of zeta_rlobe_eggleton(double q). This has been tested successfully
 /// against finite difference value.
 ///
-/// \param q mass ratio = M2/M1
-/// \return Returns d zeta d q
+/// Arguments:
+/// 
+/// * `q`: mass ratio = M2/M1
+/// 
+/// Returns:
+/// 
+/// * d zeta d q
 ///
 #[pyfunction]
 pub fn dzetadq_rlobe_eggleton(q: f64) -> Result<f64, RocheError> {

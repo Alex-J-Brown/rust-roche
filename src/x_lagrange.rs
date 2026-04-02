@@ -8,7 +8,7 @@ use crate::errors::RocheError;
 /// iteration. L1 is the point in between the two stars and so will be between
 /// 0 and 1.
 /// 
-///  \param q mass ratio = M2/M1
+/// * `q`: mass ratio = M2/M1
 /// 
 #[pyfunction]
 #[pyo3(name = "xl1")]
