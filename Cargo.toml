@@ -8,7 +8,7 @@ license = "MIT"
 [lib]
 name = "roche"
 # "cdylib" is necessary to produce a shared library for Python to import from.
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 ndarray = "0.16.1"
