@@ -97,3 +97,24 @@ pub fn face(q: f64, star: Star, spin: f64, direction: Vec3, rref: f64, pref: f64
     dvec /= g;
     Ok((pvec, dvec, r, g))
 }
+
+
+#[cfg(test)]
+mod tests {
+    use crate::ref_sphere::ref_sphere;
+
+    use super::*;
+
+    #[test]
+    fn face_test() -> Result<(), RocheError> {
+        // Values from trm.roche.face
+        let dirn = Vec3::new(1.0, 1.0, 1.0).norm();
+        let (rref, pref) = ref_sphere(0.2, Star::Secondary, 1.0, 0.8)?;
+        let (pvec, dvec, r, g) = face(0.2, Star::Secondary, 1.0, dirn, rref, pref, 1.0e-5)?;
+        assert_eq!(pvec, Vec3::new(1.1352429036726859, 0.13524290367268593, 0.13524290367268593));
+        assert_eq!(dvec, Vec3::new(0.49134297246922065, 0.5917653290265037, 0.6390585878988438));
+        assert_eq!(r, 0.2342475805242355);
+        assert_eq!(g, 2.8596655611690993);
+        Ok(())
+    }
+}
