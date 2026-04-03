@@ -211,3 +211,20 @@ impl bulirsch::System for OrbitalSystem {
         (dydt[[3]], dydt[[4]], dydt[[5]]) = rocacc(self.q, &r, &v);
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn strinit_stradv_test() -> Result<(), RocheError> {
+        // Values from trm.roche.bspot
+        let (mut r, mut v) = strinit(0.2)?;
+        let _time = stradv(0.2, &mut r, &mut v, 0.3, 1.0e-7, 1.0e-3);
+        assert!((r - Vec3::new(0.2660591412807423, 0.13860932478255575, 0.0)).length() < 1.0e-7);
+        assert!((v - Vec3::new(-1.4769457229627583, 0.31712381217252994, 0.0)).length() < 1.0e-7);
+
+        Ok(())
+    }
+}

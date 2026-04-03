@@ -321,3 +321,169 @@ impl ops::Neg for Vec3 {
     }
 }
 
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn set() {
+        let mut v1 = Vec3::new(0.0, 0.0, 0.0);
+        v1.set(1.0, 1.0, 1.0);
+        assert_eq!(v1, Vec3::new(1.0, 1.0, 1.0));
+    }
+
+    #[test]
+    fn unit() {
+        let mut v1 = Vec3::new(2.0, 3.0, 6.0);
+        v1.unit();
+        assert_eq!(v1, Vec3::new(2.0/7.0, 3.0/7.0, 6.0/7.0));
+    }
+
+    #[test]
+    fn norm() {
+        let v1 = Vec3::new(2.0, 3.0, 6.0);
+        assert_eq!(v1.norm(), Vec3::new(2.0/7.0, 3.0/7.0, 6.0/7.0));
+    }
+
+    #[test]
+    fn length() {
+        let v1 = Vec3::new(2.0, 3.0, 6.0);
+        assert_eq!(v1.length(), 7.0);
+    }
+
+    #[test]
+    fn sqr() {
+        let v1 = Vec3::new(2.0, 3.0, 6.0);
+        assert_eq!(v1.sqr(), 49.0);
+    }
+
+    #[test]
+    fn dot() {
+        let v1 = Vec3::new(1.0, 3.0, -5.0);
+        let v2 = Vec3::new(4.0, -2.0, -1.0);
+        assert_eq!(v1.dot(&v2), 3.0);
+        assert_eq!(v2.dot(&v1), 3.0);
+    }
+
+    #[test]
+    fn cross() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        let v2 = Vec3::new(4.0, 9.0, 2.0);
+        assert_eq!(v1.cross(&v2), Vec3::new(-15.0, -2.0, 39.0));
+    }
+
+
+    #[test]
+    fn mulassign_f64() {
+        let mut v1 = Vec3::new(3.0, -3.0, 1.0);
+        v1 *= 2.0;
+        assert_eq!(v1, Vec3::new(6.0, -6.0, 2.0));
+    }
+
+    #[test]
+    fn addassign_f64() {
+        let mut v1 = Vec3::new(3.0, -3.0, 1.0);
+        v1 += 2.0;
+        assert_eq!(v1, Vec3::new(5.0, -1.0, 3.0));
+    }
+
+    #[test]
+    fn subassign_f64() {
+        let mut v1 = Vec3::new(3.0, -3.0, 1.0);
+        v1 -= 2.0;
+        assert_eq!(v1, Vec3::new(1.0, -5.0, -1.0));
+    }
+
+    #[test]
+    fn addassign_vec3() {
+        let mut v1 = Vec3::new(3.0, -3.0, 1.0);
+        let v2 = Vec3::new(1.0, 2.0, -5.0);
+        v1 += v2;
+        assert_eq!(v1, Vec3::new(4.0, -1.0, -4.0));
+    }
+
+    #[test]
+    fn subassign_vec3() {
+        let mut v1 = Vec3::new(3.0, -3.0, 1.0);
+        let v2 = Vec3::new(1.0, 2.0, -5.0);
+        v1 -= v2;
+        assert_eq!(v1, Vec3::new(2.0, -5.0, 6.0));
+    }
+
+    #[test]
+    fn add_vec3vec3() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        let v2 = Vec3::new(1.0, 2.0, -5.0);
+        assert_eq!(v1+v2, Vec3::new(4.0, -1.0, -4.0));
+    }
+
+    #[test]
+    fn sub_vec3vec3() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        let v2 = Vec3::new(1.0, 2.0, -5.0);
+        assert_eq!(v1-v2, Vec3::new(2.0, -5.0, 6.0));
+    }
+
+    #[test]
+    fn divassign_f64() {
+        let mut v1 = Vec3::new(4.0, -2.0, 1.0);
+        v1 /= 2.0;
+        assert_eq!(v1, Vec3::new(2.0, -1.0, 0.5));
+    }
+
+    #[test]
+    fn div_vec3f64() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(v1 / 2.0, Vec3::new(1.5, -1.5, 0.5));
+    }
+
+    #[test]
+    fn div_f64vec3() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(9.0 / v1, Vec3::new(3.0, -3.0, 9.0));
+    }
+
+    #[test]
+    fn mul_vec3f64() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(v1 * 2.0, Vec3::new(6.0, -6.0, 2.0));
+    }
+
+    #[test]
+    fn mul_f64vec3() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(2.0 * v1, Vec3::new(6.0, -6.0, 2.0));
+    }
+
+    #[test]
+    fn add_vec3f64() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(v1 + 2.0, Vec3::new(5.0, -1.0, 3.0));
+    }
+
+    #[test]
+    fn add_f64vec3() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(2.0 + v1, Vec3::new(5.0, -1.0, 3.0));
+    }
+
+    #[test]
+    fn sub_vec3f64() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(v1 - 2.0, Vec3::new(1.0, -5.0, -1.0));
+    }
+
+    #[test]
+    fn sub_f64vec3() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(2.0 - v1, Vec3::new(-1.0, 5.0, 1.0));
+    }
+
+    #[test]
+    fn neg() {
+        let v1 = Vec3::new(3.0, -3.0, 1.0);
+        assert_eq!(-v1, Vec3::new(-3.0, 3.0, -1.0));
+    }
+
+}

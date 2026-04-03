@@ -6,7 +6,7 @@ use crate::{fblink, set_earth_iangle, x_l1};
 
 
 ///
-///     phi3, phi4 = wdphases(q, iangle, r1, r2=-1, ntheta=200)
+/// phi3, phi4 = wdphases(q, iangle, r1, r2=-1, ntheta=200)
 /// 
 /// Returns the third and fourth contact phases of the white dwarf.
 /// 
@@ -140,4 +140,20 @@ fn eclipsed_4(q: f64, iangle: f64, phase: f64, r1: f64, ffac: f64, ntheta: i32) 
     }
 
     Ok(false)
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wdphase() -> Result<(), RocheError> {
+        // Values from trm.roche.wdphases
+        assert_eq!(wdphases(0.2, 90.0, 0.015, 0.20, 200)?, (0.027637481689453125, 0.032169342041015625));
+        assert_eq!(wdphases(0.2, 85.0, 0.015, 0.20, 200)?, (0.023677825927734375, 0.029010772705078125));
+        assert_eq!(wdphases(0.2, 80.0, 0.015, 0.20, 200)?, (-1.0, 0.015842437744140625));
+        assert!(wdphases(0.2, 60.0, 0.015, 0.20, 200).is_err());
+        Ok(())
+    }
 }

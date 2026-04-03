@@ -305,3 +305,64 @@ pub fn drpot2(q: f64, spin: f64, p: &Vec3) -> Result<Vec3, RocheError> {
               comp*p.y + mu1*p.y - ssq*p.y,
               comp*p.z + mu1*p.z))
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rpot_test() -> Result<(), RocheError> {
+        // Values from trm.roche.rpot
+        let r = Vec3::new(0.3, 0.3, 0.0);
+        assert_eq!(rpot(0.2, &r)?, -2.2369184469510586);
+        assert!(rpot(-0.2, &r).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn rpot1_test() -> Result<(), RocheError> {
+        // Values from trm.roche.rpot1
+        let r = Vec3::new(0.3, 0.3, 0.0);
+        assert_eq!(rpot1(0.2, 0.5, &r)?, -2.15552955806217);
+        assert!(rpot1(-0.2, 0.5, &r).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn rpot2_test() -> Result<(), RocheError> {
+        // Values from trm.roche.rpot2
+        let r = Vec3::new(0.3, 0.3, 0.0);
+        assert_eq!(rpot2(0.2, 0.5, &r)?, -2.5055295580621695);
+        assert!(rpot2(-0.2, 0.5, &r).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn drpot_test() -> Result<(), RocheError> {
+        // Values from trm.roche.drpot
+        let r = Vec3::new(0.3, 0.3, 0.0);
+        assert_eq!(drpot(0.2, &r)?, Vec3::new(2.876187037097281, 3.0868377062344154, 0.0));
+        assert!(drpot(-0.2, &r).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn drpot1_test() -> Result<(), RocheError> {
+        // Values from trm.roche.drpot1
+        let r = Vec3::new(0.3, 0.3, 0.0);
+        assert_eq!(drpot1(0.2, 0.5, &r)?, Vec3::new(3.1011870370972807, 3.311837706234415, 0.0));
+        assert!(drpot1(-0.2, 0.5, &r).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn drpot2_test() -> Result<(), RocheError> {
+        // Values from trm.roche.drpot2
+        let r = Vec3::new(0.3, 0.3, 0.0);
+        assert_eq!(drpot2(0.2, 0.5, &r)?, Vec3::new(2.3511870370972807, 3.311837706234415, 0.0));
+        assert!(drpot2(-0.2, 0.5, &r).is_err());
+        Ok(())
+    }
+
+}

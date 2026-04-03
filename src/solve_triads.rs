@@ -138,3 +138,38 @@ pub fn findphi(q: f64, iangle: f64, delta: f64) -> Result<f64, RocheError> {
     }
     Ok(egress-ingress)
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn findi_test() -> Result<(), RocheError> {
+        // Values from trm.roche.findi
+        assert_eq!(findi(0.2, 0.06, 1.0e-4, 1.0e-5)?, 81.34474098682404);
+        assert!(findi(-0.2, 0.06, 1.0e-4, 1.0e-5).is_err());
+        assert!(findi(0.2, 0.4, 1.0e-4, 1.0e-5).is_err());
+        assert!(findi(0.2, 0.06, 0.15, 1.0e-5).is_err());
+        assert!(findi(0.2, 0.06, 1.0e-4, 15.0).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn findq_test() -> Result<(), RocheError> {
+        // Values from trm.roche.findq
+        assert_eq!(findq(85.0, 0.06, 1.0e-4, 1.0e-5)?, 0.11792682838439941);
+        assert!(findq(91.0, 0.06, 1.0e-4, 1.0e-5).is_err());
+        assert!(findq(85.0, 0.4, 1.0e-4, 1.0e-5).is_err());
+        assert!(findq(85.0, 0.06, 0.15, 1.0e-5).is_err());
+        assert!(findq(85.0, 0.06, 1.0e-4, 15.0).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn findphi_test() -> Result<(), RocheError> {
+        // Values from trm.roche.findphi
+        assert_eq!(findphi(0.2, 85.0, 1.0e-6)?, 0.07246334161812373);
+        Ok(())
+    }
+}

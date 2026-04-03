@@ -48,3 +48,17 @@ pub fn ref_sphere(q: f64, star: Star, spin: f64, ffac: f64) -> Result<(f64, f64)
         return Err(RocheError::ParameterError(message));
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ref_sphere_test() -> Result<(), RocheError> {
+        // Values from trm.roche.ref_sphere
+        assert_eq!(ref_sphere(0.2, Star::Secondary, 1.0, 0.8)?, (0.27342861229381593, -2.3996722470168605));
+        assert!(ref_sphere(-0.2, Star::Secondary, 1.0, 0.8).is_err());
+        Ok(())
+    }
+}

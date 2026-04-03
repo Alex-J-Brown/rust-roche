@@ -257,3 +257,53 @@ pub fn x_l3(q: f64) -> Result<f64, RocheError> {
     }
     return Ok(x)
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn xl1() -> Result<(), RocheError> {
+        // Values from trm.roche.xl
+        assert_eq!(x_l1(0.2)?, 0.6585556789537762);
+        assert!(x_l1(-0.2).is_err());
+        Ok(())
+    }
+
+
+    #[test]
+    fn xl11() -> Result<(), RocheError> {
+        // Values from trm.roche.xl11
+        assert_eq!(x_l1_1(0.2, 0.5)?, 0.6906163968474123);
+        assert!(x_l1_1(-0.2, 0.5).is_err());
+        Ok(())
+    }
+
+
+    #[test]
+    fn xl12() -> Result<(), RocheError> {
+        // Values from trm.roche.xl12
+        assert_eq!(x_l1_2(0.2, 0.5)?, 0.6403753216278784);
+        assert!(x_l1_2(-0.2, 0.5).is_err());
+        Ok(())
+    }
+
+
+    #[test]
+    fn xl2() -> Result<(), RocheError> {
+        // Values from trm.roche.xl2
+        assert_eq!(x_l2(0.2)?, 1.4380767810774817);
+        assert!(x_l2(-0.2).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn xl3() -> Result<(), RocheError> {
+        // Values from trm.roche.xl3
+        assert_eq!(x_l3(0.2)?, -0.9024984464339775);
+        assert!(x_l3(-0.2).is_err());
+        Ok(())
+    }
+
+}
