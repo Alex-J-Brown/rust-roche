@@ -165,6 +165,24 @@ impl ops::DivAssign<f64> for Vec3 {
     }
 }
 
+// in-place addition by f64
+impl ops::AddAssign<f64> for Vec3 {
+    fn add_assign(&mut self, rhs: f64) {
+        self.x += rhs;
+        self.y += rhs;
+        self.z += rhs;
+    }
+}
+
+// in-place subtraction by f64
+impl ops::SubAssign<f64> for Vec3 {
+    fn sub_assign(&mut self, rhs: f64) {
+        self.x -= rhs;
+        self.y -= rhs;
+        self.z -= rhs;
+    }
+}
+
 // in-place addition of vector
 impl ops::AddAssign<Vec3> for Vec3 {
     fn add_assign(&mut self, rhs: Vec3) {
