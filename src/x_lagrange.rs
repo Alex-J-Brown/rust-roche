@@ -231,7 +231,7 @@ pub fn x_l3(q: f64) -> Result<f64, RocheError> {
     }
 
     let mu = q/(1. + q);
-    let a1 = -1. + mu;
+    let a1 = 1. - mu;
     let a2 =  -2. + 2.*mu;
     let a3 = 1. - mu;
     let a4 =  1. + 2.*mu;
