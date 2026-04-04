@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use std::f64::consts::{TAU, FRAC_PI_2};
-use crate::{Star, Vec3};
+use crate::{Star, Vec3, ingress_egress, stradv, strinit};
 use crate::errors::RocheError;
 use crate::{fblink, set_earth_iangle, x_l1};
 
@@ -143,12 +143,28 @@ fn eclipsed_4(q: f64, iangle: f64, phase: f64, r1: f64, ffac: f64, ntheta: i32) 
 }
 
 
+#[pyfunction]
+// #[pyo3(signature = (q, iangle, rbs))]
+pub fn bsphases(q: f64, iangle: f64, rbs: f64) -> Result<(f64, f64), RocheError> {
+
+    let (mut r, mut v) = strinit(q)?;
+    stradv(q, &mut r, &mut v, rbs, 1.0e-7, 1.0e-2);
+    let mut ingress: f64 = 0.0;
+    let mut egress: f64 = 0.0;
+    let eclipse = ingress_egress(q, Star::Secondary, 1.0, 1.0, iangle, 1.0e-7, &r, &mut ingress, &mut egress)?;
+    if !eclipse {
+        return Err(RocheError::WdphasesError("point is not eclipsed".to_string()));
+    }
+    Ok((ingress-1.0, egress-1.0))
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn wdphase() -> Result<(), RocheError> {
+    fn wdphases_test() -> Result<(), RocheError> {
         // Values from trm.roche.wdphases
         assert_eq!(wdphases(0.2, 90.0, 0.015, 0.20, 200)?, (0.027637481689453125, 0.032169342041015625));
         assert_eq!(wdphases(0.2, 85.0, 0.015, 0.20, 200)?, (0.023677825927734375, 0.029010772705078125));
@@ -156,4 +172,20 @@ mod tests {
         assert!(wdphases(0.2, 60.0, 0.015, 0.20, 200).is_err());
         Ok(())
     }
+
+    #[test]
+    fn bsphases_test() -> Result<(), RocheError> {
+        // Values from trm.roche.bsphases
+        let (phi_in, phi_eg) = bsphases(0.2, 90.0, 0.2)?;
+        assert!((phi_in - -0.016291638617189408).abs() < 1.0e-7);
+        assert!((phi_eg - 0.07258765600962591).abs() < 1.0e-7);
+
+        let (phi_in, phi_eg) = bsphases(0.2, 85.0, 0.2)?;
+        assert!((phi_in - -0.013903522665196566).abs() < 1.0e-7);
+        assert!((phi_eg - 0.07018328081120417).abs() < 1.0e-7);
+
+        assert!(bsphases(0.2, 60.0, 0.2).is_err());
+        Ok(())
+    }
+
 }
