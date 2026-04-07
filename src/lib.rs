@@ -69,6 +69,9 @@ pub use lobes::lobe2;
 pub mod phases;
 pub use phases::*;
 
+pub mod jacobi;
+pub use jacobi::*;
+
 
 #[pyclass(from_py_object, eq, eq_int)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -129,17 +132,6 @@ fn roche(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(lobes::lobe2, m)?)?;
     m.add_function(wrap_pyfunction!(phases::wdphases, m)?)?;
     m.add_function(wrap_pyfunction!(phases::bsphases, m)?)?;
+    m.add_function(wrap_pyfunction!(jacobi::jacobi, m)?)?;
     Ok(())
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
 }
