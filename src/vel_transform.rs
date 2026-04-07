@@ -6,6 +6,10 @@ use crate::errors::RocheError;
 /// from rotating to inertial frame and (2) an inertial frame velocity 
 /// in the disc.
 /// 
+/// When translating to inertial, the accretor velocity is added.
+/// If you want the velocity relative to this you must add
+/// mu = q/(1+q) to tvy before using it.
+/// 
 /// Arguments:
 /// 
 /// * `q`: mass ratio M2/M1
