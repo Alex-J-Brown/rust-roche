@@ -280,6 +280,10 @@ pub fn linmin(
                     *phi += dphi * xc;
                     *lam += dlam * xc;
                     return Ok((fc, jammed));
+                }
+                if fc < fb {
+                    xb = xc;
+                    fb = fc;
                 } else {
                     bracketted = true;
                     break;
