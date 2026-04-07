@@ -41,6 +41,9 @@ pub use ref_sphere::*;
 pub mod stream_physics;
 pub use stream_physics::*;
 
+pub mod vstream_physics;
+pub use vstream_physics::*;
+
 pub mod fblink;
 pub use fblink::*;
 
@@ -120,6 +123,7 @@ fn roche(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(stream_physics::streamr, m)?)?;
     m.add_function(wrap_pyfunction!(stream_physics::strmnx_wrapper, m)?)?;
     m.add_function(wrap_pyfunction!(stream_physics::brightspot_position, m)?)?;
+    m.add_function(wrap_pyfunction!(vstream_physics::vstream_reg, m)?)?;
     m.add_function(wrap_pyfunction!(face::face, m)?)?;
     m.add_function(wrap_pyfunction!(solve_triads::findi, m)?)?;
     m.add_function(wrap_pyfunction!(solve_triads::findq, m)?)?;

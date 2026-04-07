@@ -489,8 +489,8 @@ pub fn brightspot_position(q: f64, rad: f64, acc: f64, smax: f64) -> Result<Vec3
     Ok(r)
 }
 
-struct OrbitalSystem {
-    q: f64,
+pub struct OrbitalSystem {
+    pub q: f64,
 }
 
 impl bulirsch::System for OrbitalSystem {
