@@ -31,8 +31,8 @@ impl LineRoche {
 
     fn cost(&self, lam: f64) -> Result<(f64, f64), RocheError> {
         let p = match self.star {
-            Star::Primary => Vec3::new(lam * self.dx, lam * self.dy, 0.),
-            Star::Secondary => Vec3::new(1.0 + lam * self.dx, lam * self.dy, 0.),
+            Star::Primary => Vec3::new(lam * self.dx, lam * self.dy, 0.0),
+            Star::Secondary => Vec3::new(1.0 + lam * self.dx, lam * self.dy, 0.0),
         };
         // how far are we from root?
         let f = rpot(self.q, &p)? - self.cpot;
@@ -44,8 +44,15 @@ impl LineRoche {
     }
 }
 
+/// 
+/// lobe1 returns arrays x and y for plotting an equatorial section
+/// of the Roche lobe of the primary star in a binary of mass ratio q = M2/M1.
+/// The arrays start and end at the inner Lagrangian point and march around 
+/// uniformly in azimuth looking from the centre of mass of the primary star.
+/// n is the number of points and must be at least 3.
+/// 
 #[pyfunction]
-pub fn lobe1(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
+pub fn lobe1(q: f64, n: usize) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     // Accuracy of location of surface in terms of binary separation
     const FRAC: f64 = 1.0e-6;
 
@@ -54,8 +61,8 @@ pub fn lobe1(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     let p: Vec3 = Vec3::new(rl1, 0.0, 0.0);
     let cpot: f64 = rpot(q, &p)?;
 
-    let mut xarr: Vec<f64> = Vec::with_capacity(n as usize);
-    let mut yarr: Vec<f64> = Vec::with_capacity(n as usize);
+    let mut xarr: Vec<f64> = Vec::with_capacity(n);
+    let mut yarr: Vec<f64> = Vec::with_capacity(n);
     for i in 0..n {
         if i == 0 || i == n - 1 {
             // special case as derivative is zero at L1
@@ -74,8 +81,15 @@ pub fn lobe1(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     Ok((xarr, yarr))
 }
 
+/// 
+/// lobe2 returns arrays x and y for plotting an equatorial section
+/// of the Roche lobe of the secondary star in a binary of mass ratio q = M2/M1.
+/// The arrays start and end at the inner Lagrangian point and march around 
+/// uniformly in azimuth looking from the centre of mass of the primary star.
+/// n is the number of points and must be at least 3.
+/// 
 #[pyfunction]
-pub fn lobe2(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
+pub fn lobe2(q: f64, n: usize) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     // Accuracy of location of surface in terms of binary separation
     const FRAC: f64 = 1.0e-6;
 
@@ -85,8 +99,8 @@ pub fn lobe2(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     let cpot: f64 = rpot(q, &p)?;
     let upper = 1.0 - rl1;
     let lower = upper / 4.0;
-    let mut xarr: Vec<f64> = Vec::with_capacity(n as usize);
-    let mut yarr: Vec<f64> = Vec::with_capacity(n as usize);
+    let mut xarr: Vec<f64> = Vec::with_capacity(n);
+    let mut yarr: Vec<f64> = Vec::with_capacity(n);
     for i in 0..n {
         if i == 0 || i == n - 1 {
             // special case as derivative is zero at L1
@@ -106,6 +120,62 @@ pub fn lobe2(q: f64, n: i32) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
         }
     }
     Ok((xarr, yarr))
+}
+
+///
+/// returns arrays vx and vy for plotting an equatorial section
+/// of the Roche lobe of the secondary star in a binary of mass ratio q = M2/M1
+/// in Doppler coordinates. The arrays start and end at the inner Lagrangian 
+/// point and march around uniformly in azimuth looking from the centre of 
+/// mass of the primary star. n is the number of points and must be at least 3. 
+/// 
+#[pyfunction]
+pub fn vlobe1(q: f64, n: usize) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
+
+    let mut tvx: f64;
+    let mut tvy: f64;
+
+    let mut vx_arr: Vec<f64> = vec![];
+    let mut vy_arr: Vec<f64> = vec![];
+
+    let (x, y) = lobe1(q, n)?;
+
+    let mu: f64 = q / (1.0 + q);
+    for i in 0..n {
+        tvx = -y[i];
+        tvy = x[i] - mu;
+        vx_arr.push(tvx);
+        vy_arr.push(tvy);
+    }
+    Ok((vx_arr, vy_arr))
+}
+
+///
+/// returns arrays vx and vy for plotting an equatorial section
+/// of the Roche lobe of the secondary star in a binary of mass ratio q = M2/M1
+/// in Doppler coordinates. The arrays start and end at the inner Lagrangian 
+/// point and march around uniformly in azimuth looking from the centre of 
+/// mass of the primary star. n is the number of points and must be at least 3. 
+/// 
+#[pyfunction]
+pub fn vlobe2(q: f64, n: usize) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
+
+    let mut tvx: f64;
+    let mut tvy: f64;
+
+    let mut vx_arr: Vec<f64> = vec![];
+    let mut vy_arr: Vec<f64> = vec![];
+
+    let (x, y) = lobe2(q, n)?;
+
+    let mu: f64 = q / (1.0 + q);
+    for i in 0..n {
+        tvx = -y[i];
+        tvy = x[i] - mu;
+        vx_arr.push(tvx);
+        vy_arr.push(tvy);
+    }
+    Ok((vx_arr, vy_arr))
 }
 
 /// rtsafe is a Numerical Recipes-based routine to find roots

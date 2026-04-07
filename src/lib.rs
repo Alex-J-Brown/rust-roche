@@ -130,6 +130,8 @@ fn roche(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(solve_triads::findphi, m)?)?;
     m.add_function(wrap_pyfunction!(lobes::lobe1, m)?)?;
     m.add_function(wrap_pyfunction!(lobes::lobe2, m)?)?;
+    m.add_function(wrap_pyfunction!(lobes::vlobe1, m)?)?;
+    m.add_function(wrap_pyfunction!(lobes::vlobe2, m)?)?;
     m.add_function(wrap_pyfunction!(phases::wdradius, m)?)?;
     m.add_function(wrap_pyfunction!(phases::wdphases, m)?)?;
     m.add_function(wrap_pyfunction!(phases::bsphases, m)?)?;
