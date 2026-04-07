@@ -1,7 +1,16 @@
 rust-roche is a translation of Tom Marsh's C++ [cpp-roche](https://github.com/trmrsh/cpp-roche) package for modelling Roche-distorted binary systems. It also has a few useful functions and types from [cpp-subs](https://github.com/trmrsh/cpp-subs) such as Vec3 and Point.
 
-Some functions from cpp-roche have not been translated yet so this is still a work-in-progress. Please add an issue on the Github repo if there's a specific function from cpp-roche that you'd like adding. 
 
+### Rust
+The latest version of rust-roche can be viewed at [rust-roche](https://crates.io/crates/rust-roche) and can be added to a rust project with
+
+```
+cargo add rust-roche
+```
+
+Some functions from cpp-roche have not been translated yet so this is still a work-in-progress. Please add an issue on the Github repo if there's a specific function from cpp-roche that you'd like adding.
+
+### Python
 This package has also been wrapped for python to replicate [trm-roche](https://github.com/trmrsh/trm-roche/tree/master) and can be installed with pip from PyPI
 
 ```
