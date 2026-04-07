@@ -4,6 +4,44 @@ use crate::{fblink, set_earth_iangle, x_l1};
 use pyo3::prelude::*;
 use std::f64::consts::{FRAC_PI_2, TAU};
 
+
+///
+/// Computes scaled radius of white dwarf, r1 = R1/a given
+/// the mass ratio, orbital inclination and phase width of the
+/// white dwarf's egress (or ingress).
+/// 
+/// Arguments:
+/// 
+/// * `q`: mass ratio M2/M1
+/// * `iangle`: orbital inclination (degrees)
+/// * `dpwd`: phase-width of WD ingress/egress feature
+/// * `ntheta`: number of points on limb of white dwarf when using wdphases during this routine.
+/// * `dr`: tolerance on scaled radius
+/// * `rmax`: maximum scaled radius to assume
+/// 
+/// Returns:
+/// 
+/// * scaled radius of WD
+/// 
+#[pyfunction]
+#[pyo3(signature = (q, iangle, dpwd, ntheta=100, dr=1.0e-5, rmax=0.1))]
+pub fn wdradius(q: f64, iangle: f64, dpwd: f64, ntheta: i32, dr: f64, rmax: f64) -> Result<f64, RocheError> {
+    let mut r1: f64;
+    let mut r1_lo: f64 = 0.0;
+    let mut r1_hi: f64 = rmax;
+    let mut phi3: f64;
+    let mut phi4: f64;
+    let mut dp: f64;
+    while r1_hi - r1_lo > dr {
+        r1 = (r1_lo + r1_hi) / 2.0;
+        (phi3, phi4) = wdphases(q, iangle, r1, -1.0, ntheta)?;
+        dp = phi4 - phi3;
+        if dp > dpwd {r1_hi = r1} else {r1_lo = r1}
+    }
+    Ok((r1_lo + r1_hi) / 2.0)
+}
+
+
 ///
 /// phi3, phi4 = wdphases(q, iangle, r1, r2=-1, ntheta=200)
 ///
@@ -194,6 +232,12 @@ pub fn bsphases(q: f64, iangle: f64, rbs: f64) -> Result<(f64, f64), RocheError>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn wdradius_test() -> Result<(), RocheError> {
+        assert_eq!(wdradius(0.2, 87.0, 0.008, 100, 1.0e-5, 0.1)?, 0.026266479492187505);
+        Ok(())
+    }
 
     #[test]
     fn wdphases_test() -> Result<(), RocheError> {
