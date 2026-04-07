@@ -33,8 +33,8 @@ pub enum Circle {
 /// Returns:
 ///
 /// * a vector of ingress and egress phase pairs during which the point in question is eclipsed.
-/// The ingress phase will always be between 0 and 1 while the egress phase will be larger than this, but
-/// by no more than 1 cycle. If the vector is null, no eclipse takes place.
+///   The ingress phase will always be between 0 and 1 while the egress phase will be larger than this, but
+///   by no more than 1 cycle. If the vector is null, no eclipse takes place.
 ///
 pub fn disc_eclipse(
     iangle: f64,
@@ -277,7 +277,7 @@ pub fn disc_eclipse(
         temp.push((ingress, egress));
     }
 
-    return Ok(temp);
+    Ok(temp)
 }
 
 pub fn circle_eclipse(

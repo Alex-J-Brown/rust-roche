@@ -76,7 +76,7 @@ pub fn ingress_egress(
                 }
             }
             *ingress = (pin + pout) / 2.0;
-            *ingress = *ingress - ingress.floor();
+            *ingress -= ingress.floor();
 
             pin = phi;
             pout = phi2;
@@ -89,16 +89,16 @@ pub fn ingress_egress(
                 }
             }
             *egress = (pin + pout) / 2.0;
-            *egress = *egress - egress.floor();
+            *egress -= egress.floor();
             if *egress < *ingress {
                 *egress += 1.0;
             }
-            return Ok(true);
+            Ok(true)
         } else {
-            return Ok(false);
+            Ok(false)
         }
     } else {
-        return Ok(false);
+        Ok(false)
     }
 }
 

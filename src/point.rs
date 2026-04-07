@@ -34,7 +34,7 @@ impl Point {
     ///
     /// sets the point's flux.
     ///
-    pub fn set_flux(&mut self, flux: f32) -> () {
+    pub fn set_flux(&mut self, flux: f32) {
         self.flux = flux;
     }
 

@@ -52,7 +52,7 @@ pub fn fblink(
     }
 
     // Create function objects for 1D minimisation in lambda direction
-    let func = |lam: f64| Ok(rpot_val(q, star, spin, earth, p, lam)?);
+    let func = |lam: f64| rpot_val(q, star, spin, earth, p, lam);
 
     // Now try to bracket a minimum. We just crudely compute function at regularly spaced intervals filling in the
     // gaps until the step size between the points drops below the threshold. Take every opportunity to jump out early
@@ -103,7 +103,7 @@ pub fn fblink(
         };
 
         // this may fail
-        let (_xmin, flam) = dbrent(lam1, lam, lam2, |x| func(x), |x| dfunc(x), acc, true, pref)?;
+        let (_xmin, flam) = dbrent(lam1, lam, lam2, func, dfunc, acc, true, pref)?;
 
         Ok(flam < pref)
     } else {

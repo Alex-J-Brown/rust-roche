@@ -69,12 +69,11 @@ pub fn wdphases(
     r2: f64,
     ntheta: i32,
 ) -> Result<(f64, f64), RocheError> {
-    let ffac: f64;
-    if r2 <= 0.0 {
-        ffac = 1.0;
+    let ffac: f64 = if r2 <= 0.0 {
+        1.0
     } else {
-        ffac = r2 / (1.0 - x_l1(q)?);
-    }
+        r2 / (1.0 - x_l1(q)?)
+    };
     // fourth contact
     let mut phi4lo: f64 = 0.0;
     let mut phi4hi: f64 = 0.25;

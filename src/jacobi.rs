@@ -22,10 +22,9 @@ pub fn jacobi(q: f64, r: &Vec3, v: &Vec3) -> f64 {
 
     let yz_sqr: f64 = r.y.powi(2) + r.z.powi(2);
 
-    let jac = (v.x.powi(2) + v.y.powi(2) + v.z.powi(2) - r.y.powi(2) - (r.x - f2).powi(2)) / 2.0
+    (v.x.powi(2) + v.y.powi(2) + v.z.powi(2) - r.y.powi(2) - (r.x - f2).powi(2)) / 2.0
         - f1 / (r.x.powi(2) + yz_sqr).sqrt()
-        - f2 / ((r.x - 1.0).powi(2) + yz_sqr).sqrt();
-    jac
+        - f2 / ((r.x - 1.0).powi(2) + yz_sqr).sqrt()
 }
 
 #[cfg(test)]

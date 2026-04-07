@@ -30,16 +30,16 @@ impl LineRoche {
     }
 
     fn cost(&self, lam: f64) -> Result<(f64, f64), RocheError> {
-        let p = match self.star {
+        let p: Vec3 = match self.star {
             Star::Primary => Vec3::new(lam * self.dx, lam * self.dy, 0.0),
             Star::Secondary => Vec3::new(1.0 + lam * self.dx, lam * self.dy, 0.0),
         };
         // how far are we from root?
-        let f = rpot(self.q, &p)? - self.cpot;
+        let f: f64 = rpot(self.q, &p)? - self.cpot;
         // gradient of potential at point
-        let dp = drpot(self.q, &p)?;
+        let dp: Vec3 = drpot(self.q, &p)?;
         // dot product of gradient with line direction - gives scalar gradient in direction of line
-        let d = self.dx * dp.x + self.dy * dp.y;
+        let d: f64 = self.dx * dp.x + self.dy * dp.y;
         Ok((f, d))
     }
 }
@@ -57,7 +57,7 @@ pub fn lobe1(q: f64, n: usize) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     const FRAC: f64 = 1.0e-6;
 
     // Compute the potential at the inner Lagrange point
-    let rl1 = x_l1(q)?;
+    let rl1: f64 = x_l1(q)?;
     let p: Vec3 = Vec3::new(rl1, 0.0, 0.0);
     let cpot: f64 = rpot(q, &p)?;
 
@@ -70,10 +70,10 @@ pub fn lobe1(q: f64, n: usize) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
             yarr.push(0.0);
         } else {
             let theta: f64 = (i as f64) * std::f64::consts::PI * 2.0 / ((n as f64) - 1.0);
-            let dx = theta.cos();
-            let dy = theta.sin();
-            let line = LineRoche::new(q, Star::Primary, dx, dy, cpot);
-            let lam = rtsafe(rl1 / 4.0, rl1, |lam| line.cost(lam), FRAC)?;
+            let dx: f64 = theta.cos();
+            let dy: f64 = theta.sin();
+            let line: LineRoche = LineRoche::new(q, Star::Primary, dx, dy, cpot);
+            let lam: f64 = rtsafe(rl1 / 4.0, rl1, |lam| line.cost(lam), FRAC)?;
             xarr.push(lam * dx);
             yarr.push(lam * dy);
         }
@@ -94,11 +94,11 @@ pub fn lobe2(q: f64, n: usize) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
     const FRAC: f64 = 1.0e-6;
 
     // Compute the potential at the inner Lagrange point
-    let rl1 = x_l1(q)?;
+    let rl1: f64 = x_l1(q)?;
     let p: Vec3 = Vec3::new(rl1, 0.0, 0.0);
     let cpot: f64 = rpot(q, &p)?;
-    let upper = 1.0 - rl1;
-    let lower = upper / 4.0;
+    let upper: f64 = 1.0 - rl1;
+    let lower: f64 = upper / 4.0;
     let mut xarr: Vec<f64> = Vec::with_capacity(n);
     let mut yarr: Vec<f64> = Vec::with_capacity(n);
     for i in 0..n {
@@ -108,13 +108,10 @@ pub fn lobe2(q: f64, n: usize) -> Result<(Vec<f64>, Vec<f64>), RocheError> {
             yarr.push(0.0);
         } else {
             let theta: f64 = (i as f64) * std::f64::consts::PI * 2.0 / ((n as f64) - 1.0);
-            let dx = -theta.cos();
-            let dy = theta.sin();
-            let line = LineRoche::new(q, Star::Secondary, dx, dy, cpot);
-            let lam = match rtsafe(lower, upper, |lam| line.cost(lam), FRAC) {
-                Ok(lam) => lam,
-                Err(e) => return Err(e),
-            };
+            let dx: f64 = -theta.cos();
+            let dy: f64 = theta.sin();
+            let line: LineRoche = LineRoche::new(q, Star::Secondary, dx, dy, cpot);
+            let lam: f64 = rtsafe(lower, upper, |lam| line.cost(lam), FRAC)?;
             xarr.push(1.0 + lam * dx);
             yarr.push(lam * dy);
         }
@@ -258,7 +255,7 @@ where
         iter += 1;
     }
 
-    return Err(RocheError::RtsafeError(
+    Err(RocheError::RtsafeError(
         "Maximum number of iterations exceeded in rtsafe".to_string(),
-    ));
+    ))
 }

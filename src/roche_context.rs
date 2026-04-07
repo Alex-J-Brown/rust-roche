@@ -35,7 +35,7 @@ impl RocheContext {
     }
 
     pub fn potential(&self, earth: &Vec3, p: &Vec3, lam: f64) -> Result<f64, RocheError> {
-        Ok(rpot_val(self.q, self.star, self.spin, earth, p, lam)?)
+        rpot_val(self.q, self.star, self.spin, earth, p, lam)
     }
 
     pub fn gradient(&self, earth: &Vec3, p: &Vec3, lam: f64) -> Result<(f64, f64), RocheError> {
@@ -86,7 +86,7 @@ impl RocheContext {
             Ok((rref, pref))
         } else {
             let message = format!("{:?} is not and instance of Star.", self.star);
-            return Err(RocheError::ParameterError(message));
+            Err(RocheError::ParameterError(message))
         }
     }
 
@@ -109,7 +109,7 @@ impl RocheContext {
         }
 
         // Create function objects for 1D minimisation in lambda direction
-        let func = |lam: f64| Ok(self.potential(earth, p, lam)?);
+        let func = |lam: f64| self.potential(earth, p, lam);
 
         // Now try to bracket a minimum. We just crudely compute function at regularly spaced intervals filling in the
         // gaps until the step size between the points drops below the threshold. Take every opportunity to jump out early
@@ -160,7 +160,7 @@ impl RocheContext {
             };
 
             let (_xmin, flam) =
-                dbrent(lam1, lam, lam2, |x| func(x), |x| dfunc(x), acc, true, pref)?;
+                dbrent(lam1, lam, lam2, func, dfunc, acc, true, pref)?;
 
             Ok(flam < pref)
         } else {
@@ -245,7 +245,7 @@ impl RocheContext {
         let mut dvec: Vec3 = drp(self.q, self.spin, &pvec)?;
         let g = dvec.length();
         dvec /= g;
-        return Ok((pvec, dvec, r, g));
+        Ok((pvec, dvec, r, g))
     }
 
     pub fn ingress_egress(
@@ -299,7 +299,7 @@ impl RocheContext {
                     }
                 }
                 *ingress = (pin + pout) / 2.0;
-                *ingress = *ingress - ingress.floor();
+                *ingress -= ingress.floor();
 
                 pin = phi;
                 pout = phi2;
@@ -315,16 +315,16 @@ impl RocheContext {
                     }
                 }
                 *egress = (pin + pout) / 2.0;
-                *egress = *egress - egress.floor();
+                *egress -= egress.floor();
                 if *egress < *ingress {
                     *egress += 1.0;
                 }
-                return Ok(true);
+                Ok(true)
             } else {
-                return Ok(false);
+                Ok(false)
             }
         } else {
-            return Ok(false);
+            Ok(false)
         }
     }
 
@@ -350,12 +350,12 @@ impl RocheContext {
         let mut ingress: f64 = 0.0;
         let mut egress: f64 = 0.0;
         // let mut eclipses = Etype::new();
-        if (roche && self.ingress_egress(ffac, iangle, delta, &posn, &mut ingress, &mut egress)?)
+        if (roche && self.ingress_egress(ffac, iangle, delta, posn, &mut ingress, &mut egress)?)
             || (!roche
                 && sphere_eclipse(
                     cosi,
                     sini,
-                    &posn,
+                    posn,
                     &cofm,
                     r,
                     &mut ingress,
@@ -384,14 +384,14 @@ impl RocheContext {
         phi: &mut f64,
         lam: &mut f64,
     ) -> Result<bool, RocheError> {
-        Ok(pot_min(
+        pot_min(
             self.q, self.star, self.spin, cosi, sini, p, phi1, phi2, lam1, lam2, rref, pref, acc,
             phi, lam,
-        )?)
+        )
     }
 
     pub fn x_l1(&self) -> Result<f64, RocheError> {
-        Ok(x_l1(self.q)?)
+        x_l1(self.q)
     }
 
     pub fn x_l1_asyncronous(&self) -> Result<f64, RocheError> {
@@ -402,10 +402,10 @@ impl RocheContext {
     }
 
     pub fn x_l2(&self) -> Result<f64, RocheError> {
-        Ok(x_l2(self.q)?)
+        x_l2(self.q)
     }
 
     pub fn x_l3(&self) -> Result<f64, RocheError> {
-        Ok(x_l3(self.q)?)
+        x_l3(self.q)
     }
 }

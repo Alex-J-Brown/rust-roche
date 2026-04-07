@@ -71,7 +71,7 @@ pub fn vstream(q: f64, step: f64, n_points: usize, transform_type: i32) -> Resul
     let smax: f64 = 1.0e-3_f64.min(step / 2.0);
 
     // set up Bulirsch-Stoer integrator
-    let system = OrbitalSystem { q: q };
+    let system = OrbitalSystem { q };
     let mut integrator = Integrator::default()
         .with_abs_tol(1.0e-8)
         .with_rel_tol(1.0e-8)

@@ -60,7 +60,7 @@ pub fn ref_sphere(q: f64, star: Star, spin: f64, ffac: f64) -> Result<(f64, f64)
         Ok((rref, pref))
     } else {
         let message = format!("{:?} is not and instance of Star.", star);
-        return Err(RocheError::ParameterError(message));
+        Err(RocheError::ParameterError(message))
     }
 }
 

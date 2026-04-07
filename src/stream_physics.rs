@@ -85,7 +85,7 @@ pub fn stream(q: f64, step: f64, n_points: usize) -> Result<(Vec<f64>, Vec<f64>)
     // Store interpolation between L1 and initial point if
     // step has been set small enough
 
-    let mut dist = (r.x - rl1).hypot(r.y);
+    let mut dist: f64 = (r.x - rl1).hypot(r.y);
 
     let frac: f64;
 
@@ -97,7 +97,7 @@ pub fn stream(q: f64, step: f64, n_points: usize) -> Result<(Vec<f64>, Vec<f64>)
     }
 
     // set up Bulirsch-Stoer integrator
-    let system = OrbitalSystem { q: q };
+    let system = OrbitalSystem { q };
     let mut integrator = Integrator::default()
         .with_abs_tol(1.0e-8)
         .with_rel_tol(1.0e-8)
@@ -106,8 +106,8 @@ pub fn stream(q: f64, step: f64, n_points: usize) -> Result<(Vec<f64>, Vec<f64>)
     let mut y = ndarray::array![r.x, r.y, r.z, v.x, v.y, v.z];
     let mut y_next = ndarray::Array::zeros(y.raw_dim());
 
-    let mut delta_t = 1.0e-3;
-    let smax = (1.0e-3_f64).min(step / 2.0);
+    let mut delta_t: f64 = 1.0e-3;
+    let smax: f64 = (1.0e-3_f64).min(step / 2.0);
 
     let mut vel: f64;
     while lp < n_points - 1 {
@@ -146,7 +146,6 @@ pub fn stream(q: f64, step: f64, n_points: usize) -> Result<(Vec<f64>, Vec<f64>)
 ///
 pub fn strmnx(q: f64, r: &mut Vec3, v: &mut Vec3, acc: f64) -> Result<(), RocheError> {
     let mut dir: f64;
-    let dir1: f64;
     let mut lo: f64;
     let mut hi: f64;
     let mut ro: Vec3 = *r;
@@ -156,10 +155,10 @@ pub fn strmnx(q: f64, r: &mut Vec3, v: &mut Vec3, acc: f64) -> Result<(), RocheE
 
     // Store initial direction
     dir = r.dot(v);
-    dir1 = dir;
+    let dir1: f64 = dir;
 
     // set up Bulirsch-Stoer integrator
-    let system = OrbitalSystem { q: q };
+    let system = OrbitalSystem { q };
     let mut integrator = Integrator::default()
         .with_abs_tol(1.0e-8)
         .with_rel_tol(1.0e-8)
@@ -314,10 +313,10 @@ pub fn streamr(q: f64, rad: f64, n_points: usize) -> Result<(Vec<f64>, Vec<f64>)
 /// * `rad`:  Radius to aim for
 /// * `acc`:  Accuracy with which to place output point at rad.
 /// * `smax`: Largest time step allowed. It is possible that the
-/// routine could take such a large step that it misses
-/// the point when the stream is inside the requested
-/// radius. This allows one to control this. Typical
-/// value = 1.e-3.
+///   routine could take such a large step that it misses
+///   the point when the stream is inside the requested
+///   radius. This allows one to control this. Typical
+///   value = 1.e-3.
 ///
 /// Returns:
 ///
@@ -338,7 +337,7 @@ pub fn stradv(q: f64, r: &mut Vec3, v: &mut Vec3, rad: f64, acc: f64, smax: f64)
     let mut rnow: f64 = rinit;
 
     // set up Bulirsch-Stoer integrator
-    let system = OrbitalSystem { q: q };
+    let system = OrbitalSystem { q };
     let mut integrator = Integrator::default()
         .with_abs_tol(1.0e-8)
         .with_rel_tol(1.0e-8)
@@ -458,7 +457,7 @@ pub fn rocacc(q: f64, r: &Vec3, v: &Vec3) -> (f64, f64, f64) {
     let r2sq: f64 = (r.x - 1.0) * (r.x - 1.0) + yzsq;
     let fm1: f64 = f1 / (r1sq * (r1sq.sqrt()));
     let fm2: f64 = f2 / (r2sq * (r2sq.sqrt()));
-    let fm3 = fm1 + fm2;
+    let fm3: f64 = fm1 + fm2;
 
     let x: f64 = -fm3 * r.x + fm2 + 2.0 * v.y + r.x - f2;
     let y: f64 = -fm3 * r.y - 2.0 * v.x + r.y;
@@ -518,7 +517,7 @@ mod tests {
     fn strinit_stradv_test() -> Result<(), RocheError> {
         // Values from trm.roche.bspot
         let (mut r, mut v) = strinit(0.2)?;
-        let _time = stradv(0.2, &mut r, &mut v, 0.3, 1.0e-7, 1.0e-3);
+        let _time: f64 = stradv(0.2, &mut r, &mut v, 0.3, 1.0e-7, 1.0e-3);
         assert!((r - Vec3::new(0.2660591412807423, 0.13860932478255575, 0.0)).length() < 1.0e-7);
         assert!((v - Vec3::new(-1.4769457229627583, 0.31712381217252994, 0.0)).length() < 1.0e-7);
         Ok(())

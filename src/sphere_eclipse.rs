@@ -69,7 +69,7 @@ pub fn sphere_eclipse(
         *phi1 -= phi1.floor();
         *phi2 = *phi1 + 2. * delta / TAU;
     }
-    return true;
+    true
 }
 
 // wrapper of the above function to use with Python (e.g avoiding mutable arguments)
@@ -164,7 +164,7 @@ pub fn sphere_eclipse_vector(
 
     *lam2 = -bquad + fac;
     *lam1 = 0_f64.max(cquad / (*lam2));
-    return true;
+    true
 }
 
 // wrapper of the above function to use with Python (e.g avoiding mutable arguments)

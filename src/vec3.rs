@@ -23,7 +23,7 @@ pub struct Vec3 {
 impl Vec3 {
     #[new]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Self { x: x, y: y, z: z }
+        Self { x, y, z }
     }
 
     #[staticmethod]
@@ -44,7 +44,7 @@ impl Vec3 {
         }
     }
 
-    pub fn set(&mut self, x: f64, y: f64, z: f64) -> () {
+    pub fn set(&mut self, x: f64, y: f64, z: f64) {
         self.x = x;
         self.y = y;
         self.z = z;
@@ -103,42 +103,42 @@ impl Vec3 {
     // Python dunder methods for arithmetic
     fn __add__(&self, other: Vec3OrF64) -> Self {
         match other {
-            Vec3OrF64::Vec3(v) => self.clone() + v,
-            Vec3OrF64::F64(f) => self.clone() + f,
+            Vec3OrF64::Vec3(v) => *self + v,
+            Vec3OrF64::F64(f) => *self + f,
         }
     }
     fn __radd__(&self, other: Vec3OrF64) -> Self {
         match other {
-            Vec3OrF64::Vec3(v) => v + self.clone(),
-            Vec3OrF64::F64(f) => f + self.clone(),
+            Vec3OrF64::Vec3(v) => v + *self,
+            Vec3OrF64::F64(f) => f + *self,
         }
     }
     fn __sub__(&self, other: Vec3OrF64) -> Self {
         match other {
-            Vec3OrF64::Vec3(v) => self.clone() - v,
-            Vec3OrF64::F64(f) => self.clone() - f,
+            Vec3OrF64::Vec3(v) => *self - v,
+            Vec3OrF64::F64(f) => *self - f,
         }
     }
     fn __rsub__(&self, other: Vec3OrF64) -> Self {
         match other {
-            Vec3OrF64::Vec3(v) => v - self.clone(),
-            Vec3OrF64::F64(f) => f - self.clone(),
+            Vec3OrF64::Vec3(v) => v - *self,
+            Vec3OrF64::F64(f) => f - *self,
         }
     }
     fn __mul__(&self, other: f64) -> Self {
-        self.clone() * other
+        *self * other
     }
     fn __rmul__(&self, other: f64) -> Self {
-        other * self.clone()
+        other * *self
     }
     fn __truediv__(&self, other: f64) -> Self {
-        self.clone() / other
+        *self / other
     }
     fn __rtruediv__(&self, other: f64) -> Self {
-        other / self.clone()
+        other / *self
     }
     fn __neg__(&self) -> Self {
-        -self.clone()
+        -*self
     }
 }
 

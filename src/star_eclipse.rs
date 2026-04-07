@@ -48,7 +48,7 @@ pub fn star_eclipse(
             ffac,
             iangle,
             delta,
-            &posn,
+            posn,
             &mut ingress,
             &mut egress,
         )?)
@@ -56,7 +56,7 @@ pub fn star_eclipse(
             && sphere_eclipse(
                 cosi,
                 sini,
-                &posn,
+                posn,
                 &cofm,
                 r,
                 &mut ingress,

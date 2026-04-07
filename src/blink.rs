@@ -18,20 +18,16 @@ use crate::x_l1;
 /// * `r`: the position vector (in units of binary separation)
 /// * `e`: unit vector pointing towards Earth. Standardly this is (sini(i)*cos(phi),-sin(i)*sin(phi),cos(i))
 /// * `acc`: step size parameter. acc specifies the size of steps taken when trying to see if the
-/// photon path goes inside the Roche lobe. The step size is roughly acc times the radius of the lobe filling star.
-/// This means that the photon path could mistakenly not be occulted if it passed less than about (acc**2)/8 of
-/// the radius below the surface of the Roche lobe. acc of order 0.1 should therefore do the job.
+///   photon path goes inside the Roche lobe. The step size is roughly acc times the radius of the lobe filling star.
+///   This means that the photon path could mistakenly not be occulted if it passed less than about (acc**2)/8 of
+///   the radius below the surface of the Roche lobe. acc of order 0.1 should therefore do the job.
+/// 
 /// Returns:
 ///
 /// * false = not eclipsed; true = eclipsed.
 ///
 pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> Result<bool, RocheError> {
     let mut x_cofm: f64;
-    let c1: f64;
-    let c2: f64;
-    let step: f64;
-    let pp: f64;
-    let crit: f64;
     let mut p: f64;
     let p1: f64;
     let p2: f64;
@@ -50,9 +46,9 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> Result<bool, RocheError> {
     }
 
     x_cofm = 1.0 / (1.0 + q);
-    c1 = 2.0 * x_cofm;
+    let c1: f64 = 2.0 * x_cofm;
     x_cofm *= q;
-    c2 = 2.0 * x_cofm;
+    let c2: f64 = 2.0 * x_cofm;
 
     // Locate the inner Lagrangian point (L1)
     let rl1: f64 = x_l1(q)?;
@@ -61,14 +57,14 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> Result<bool, RocheError> {
     r1 = rl1;
     r2 = 1.0 - rl1;
     let xc: f64 = rl1 - x_cofm;
-    crit = c1 / r1 + c2 / r2 + xc * xc;
+    let crit: f64 = c1 / r1 + c2 / r2 + xc * xc;
 
     // The red star lies entirely within the sphere centred on its
     // centre of mass and reaching the inner Lagrangian point.
 
     let rsphere: f64 = 1.0 - rl1;
-    pp = rsphere * rsphere;
-    step = rsphere * acc;
+    let pp: f64 = rsphere * rsphere;
+    let step: f64 = rsphere * acc;
 
     // From now on computations are done every call. Main point is
     // to try to bail out as soon as possible to save time
@@ -195,5 +191,5 @@ pub fn blink(q: f64, r: &Vec3, e: &Vec3, acc: f64) -> Result<bool, RocheError> {
         }
     }
 
-    return Ok(false);
+    Ok(false)
 }

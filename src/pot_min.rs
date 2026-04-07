@@ -55,7 +55,7 @@ pub fn linmin(
     let make_func = |phi0: f64, lam0: f64, dphi0: f64, dlam0: f64| {
         let func = move |x: f64| {
             let earth: Vec3 = set_earth(cosi, sini, phi0 + dphi0 * x);
-            Ok(rpot_val(q, star, spin, &earth, p, lam0 + dlam0 * x)?)
+            rpot_val(q, star, spin, &earth, p, lam0 + dlam0 * x)
         };
 
         let dfunc = move |x: f64| {
@@ -240,7 +240,7 @@ pub fn linmin(
                     }
                 }
                 4 => {
-                    *lam = lam1;
+                    *lam = lam2;
                     dlam = 0.0;
                     if dphi > 0.0 {
                         dphi = phi1 - *phi;
@@ -304,7 +304,7 @@ pub fn linmin(
 
     let xacc: f64 = acc / ((TAU * dphi).powi(2) + dlam * dlam).sqrt();
 
-    let (xmin, pmin) = dbrent(xa, xb, xc, &func, &dfunc, xacc, true, pref)?;
+    let (xmin, pmin) = dbrent(xa, xb, xc, func, dfunc, xacc, true, pref)?;
 
     *phi += dphi * xmin;
     *lam += dlam * xmin;
@@ -339,7 +339,7 @@ pub fn linmin(
 /// * `pref`: reference potential.
 /// * `acc`:  absolute accuracy in position to go for.
 /// * `phi`:  phi at minimum potential. Ingress occurs between phi1 and phi.
-///           if there is an eclipse. Egress occurs between phi and phi2.
+///   if there is an eclipse. Egress occurs between phi and phi2.
 /// * `lam`:  lambda at minimum potential.
 ///
 /// Returns:
@@ -613,5 +613,5 @@ where
         }
     }
 
-    return Err(RocheError::DbrentError("too many iterations.".to_string()));
+    Err(RocheError::DbrentError("too many iterations.".to_string()))
 }

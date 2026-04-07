@@ -13,9 +13,9 @@ use crate::errors::RocheError;
 ///
 /// * `q`: mass ratio M2/M1
 /// * `transform_type`: integer representing velocity transform.
-/// 1: rotating frame -> inertial frame
-/// 2: rotating frame to inertial frame velocity of disc
-/// 3: rotating frame (i.e. gived out what you entered)
+///   1: rotating frame -> inertial frame
+///   2: rotating frame to inertial frame velocity of disc
+///   3: rotating frame (i.e. gived out what you entered)
 /// * `x`: x-coordinate where transform is performed for
 /// * `y`: y-coordinate where transform is performed for
 /// * `vx`: velocity in x-axis in the rotating frame to transform
