@@ -4,9 +4,8 @@ build-backend = "maturin"
 
 [project]
 name = "roche"
-version = "0.2.1"
+version = "0.2.2"
 requires-python = ">=3.8"
 
 [tool.maturin]
-features = ["pyo3/extension-module"]
-cargo-extra-args = "--features extension-module"
+features = ["pyo3/extension-module", "pyo3/abi3-py38"]
