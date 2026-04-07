@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use std::f64::consts::{TAU, FRAC_PI_2};
-use crate::{Star, Vec3, ingress_egress, stradv, strinit};
+use crate::{Star, Vec3, ingress_egress, brightspot_position};
 use crate::errors::RocheError;
 use crate::{fblink, set_earth_iangle, x_l1};
 
@@ -147,8 +147,7 @@ fn eclipsed_4(q: f64, iangle: f64, phase: f64, r1: f64, ffac: f64, ntheta: i32) 
 // #[pyo3(signature = (q, iangle, rbs))]
 pub fn bsphases(q: f64, iangle: f64, rbs: f64) -> Result<(f64, f64), RocheError> {
 
-    let (mut r, mut v) = strinit(q)?;
-    stradv(q, &mut r, &mut v, rbs, 1.0e-7, 1.0e-2);
+    let r = brightspot_position(q, rbs, 1.0e-7, 1.0e-2)?;
     let mut ingress: f64 = 0.0;
     let mut egress: f64 = 0.0;
     let eclipse = ingress_egress(q, Star::Secondary, 1.0, 1.0, iangle, 1.0e-7, &r, &mut ingress, &mut egress)?;

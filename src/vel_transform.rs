@@ -10,7 +10,7 @@ pub fn vel_transform(q: f64, transform_type: i32, x: f64, y: f64, vx: f64, vy: f
 
     match transform_type {
         1 => Ok((vx - y, vy + x - mu)),
-        2 => Ok((-vkep*y/rad, vkep*x/(rad-mu))),
+        2 => Ok((-vkep*y/rad, vkep*x/rad - mu)),
         3 => Ok((vx, vy)),
         _ => Err(RocheError::ParameterError(format!("{} is not a valid transform_type.", transform_type))),
     }

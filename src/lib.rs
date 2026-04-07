@@ -117,6 +117,10 @@ fn roche(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(stream_physics::stradv_wrapper, m)?)?;
     m.add_function(wrap_pyfunction!(stream_physics::rocacc, m)?)?;
     m.add_function(wrap_pyfunction!(stream_physics::strinit, m)?)?;
+    m.add_function(wrap_pyfunction!(stream_physics::stream, m)?)?;
+    m.add_function(wrap_pyfunction!(stream_physics::streamr, m)?)?;
+    m.add_function(wrap_pyfunction!(stream_physics::strmnx_wrapper, m)?)?;
+    m.add_function(wrap_pyfunction!(stream_physics::brightspot_position, m)?)?;
     m.add_function(wrap_pyfunction!(face::face, m)?)?;
     m.add_function(wrap_pyfunction!(solve_triads::findi, m)?)?;
     m.add_function(wrap_pyfunction!(solve_triads::findq, m)?)?;
