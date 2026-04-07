@@ -72,7 +72,6 @@ pub use phases::*;
 pub mod jacobi;
 pub use jacobi::*;
 
-
 #[pyclass(from_py_object, eq, eq_int)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Star {
@@ -82,12 +81,9 @@ pub enum Star {
 
 pub type Etype = Vec<(f64, f64)>;
 
-
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
 }
-
-
 
 // Python module
 

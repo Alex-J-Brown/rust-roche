@@ -1,16 +1,16 @@
-use std::f64::consts::TAU;
 use crate::errors::RocheError;
-use crate::{Vec3, Star};
-use crate::{ref_sphere, sphere_eclipse, set_earth, pot_min, fblink};
+use crate::{Star, Vec3};
+use crate::{fblink, pot_min, ref_sphere, set_earth, sphere_eclipse};
 use pyo3::prelude::*;
+use std::f64::consts::TAU;
 
-/// 
-/// ingress_egress tests for whether a given point is eclipsed by a Roche-distorted star. If 
-/// it is, it computes the ingress and egress phases using a binary chop. The accuracy on the 
+///
+/// ingress_egress tests for whether a given point is eclipsed by a Roche-distorted star. If
+/// it is, it computes the ingress and egress phases using a binary chop. The accuracy on the
 /// phase should be set to be below the expected uncertainties of the phases of your data.
 ///
 /// Arguments:
-/// 
+///
 /// * `q`:       the mass ratio = M2/M1.
 /// * `star`:    which star, primary or secondary, is doing the eclipsing
 /// * `spin`:    ratio of spin to orbit of eclipsing star
@@ -19,13 +19,23 @@ use pyo3::prelude::*;
 /// * `delta`:  the accuracy in phase wanted.
 /// * `r`:       position vector of point of interest.
 /// * `ingress`: ingress phase (if eclipsed)
-/// * `egress`:  egress phase 
-/// 
+/// * `egress`:  egress phase
+///
 /// Returns:
-/// 
+///
 /// * false = not eclipsed; true = eclipsed.
-/// 
-pub fn ingress_egress(q: f64, star: Star, spin: f64, ffac: f64, iangle: f64, delta: f64, r: &Vec3, ingress: &mut f64, egress: &mut f64) -> Result<bool, RocheError> {
+///
+pub fn ingress_egress(
+    q: f64,
+    star: Star,
+    spin: f64,
+    ffac: f64,
+    iangle: f64,
+    delta: f64,
+    r: &Vec3,
+    ingress: &mut f64,
+    egress: &mut f64,
+) -> Result<bool, RocheError> {
     let rref: f64;
     let pref: f64;
     (rref, pref) = ref_sphere(q, star, spin, ffac)?;
@@ -44,38 +54,41 @@ pub fn ingress_egress(q: f64, star: Star, spin: f64, ffac: f64, iangle: f64, del
     let mut phi: f64 = 0.0;
     let mut lam: f64 = 0.0;
 
-    if sphere_eclipse(cosi, sini, r, &cofm, rref, &mut phi1, &mut phi2, &mut lam1, &mut lam2) {
-        
-        let acc: f64 = 2.*(2.0*TAU*(lam2 - lam1)*delta).sqrt();
+    if sphere_eclipse(
+        cosi, sini, r, &cofm, rref, &mut phi1, &mut phi2, &mut lam1, &mut lam2,
+    ) {
+        let acc: f64 = 2. * (2.0 * TAU * (lam2 - lam1) * delta).sqrt();
 
-        if pot_min(q, star, spin, cosi, sini, r, phi1, phi2, lam1, lam2, rref, pref, acc, &mut phi, &mut lam)? {
-
+        if pot_min(
+            q, star, spin, cosi, sini, r, phi1, phi2, lam1, lam2, rref, pref, acc, &mut phi,
+            &mut lam,
+        )? {
             let mut pin: f64 = phi;
             let mut pout: f64 = phi1;
             let mut pmid: f64;
 
             while (pin - pout).abs() > delta {
-                pmid = (pin + pout)/2.0;
+                pmid = (pin + pout) / 2.0;
                 if fblink(q, star, spin, ffac, acc, &set_earth(cosi, sini, pmid), r).unwrap() {
                     pin = pmid;
                 } else {
                     pout = pmid;
                 }
             }
-            *ingress = (pin+pout)/2.0;
+            *ingress = (pin + pout) / 2.0;
             *ingress = *ingress - ingress.floor();
 
             pin = phi;
             pout = phi2;
-            while (pin-pout).abs() > delta {
-                pmid = (pin+pout)/2.;
+            while (pin - pout).abs() > delta {
+                pmid = (pin + pout) / 2.;
                 if fblink(q, star, spin, ffac, acc, &set_earth(cosi, sini, pmid), r).unwrap() {
                     pin = pmid;
                 } else {
                     pout = pmid;
                 }
             }
-            *egress = (pin+pout)/2.0;
+            *egress = (pin + pout) / 2.0;
             *egress = *egress - egress.floor();
             if *egress < *ingress {
                 *egress += 1.0;
@@ -87,14 +100,13 @@ pub fn ingress_egress(q: f64, star: Star, spin: f64, ffac: f64, iangle: f64, del
     } else {
         return Ok(false);
     }
-
 }
 
 // wrapper for python library, avoiding mutable references
 
-/// 
-/// ingress_egress tests for whether a given point is eclipsed by a Roche-distorted star. If 
-/// it is, it computes the ingress and egress phases using a binary chop. The accuracy on the 
+///
+/// ingress_egress tests for whether a given point is eclipsed by a Roche-distorted star. If
+/// it is, it computes the ingress and egress phases using a binary chop. The accuracy on the
 /// phase should be set to be below the expected uncertainties of the phases of your data.
 ///
 /// \param q       the mass ratio = M2/M1.
@@ -105,12 +117,30 @@ pub fn ingress_egress(q: f64, star: Star, spin: f64, ffac: f64, iangle: f64, del
 /// \param delta   the accuracy in phase wanted.
 /// \param r       position vector of point of interest.
 /// \return (eclipsed, ingress_phase, egress_phase)
-/// 
+///
 #[pyfunction]
 #[pyo3(name = "ingress_egress")]
-pub fn ingress_egress_wrapper(q: f64, star: Star, spin: f64, ffac: f64, iangle: f64, delta: f64, r: &Vec3) -> Result<(bool, f64, f64), RocheError> {
+pub fn ingress_egress_wrapper(
+    q: f64,
+    star: Star,
+    spin: f64,
+    ffac: f64,
+    iangle: f64,
+    delta: f64,
+    r: &Vec3,
+) -> Result<(bool, f64, f64), RocheError> {
     let mut ingress: f64 = 0.0;
     let mut egress: f64 = 0.0;
-    let eclipsed: bool = ingress_egress(q, star, spin, ffac, iangle, delta, r, &mut ingress, &mut egress)?;
+    let eclipsed: bool = ingress_egress(
+        q,
+        star,
+        spin,
+        ffac,
+        iangle,
+        delta,
+        r,
+        &mut ingress,
+        &mut egress,
+    )?;
     Ok((eclipsed, ingress, egress))
 }

@@ -1,11 +1,11 @@
-use std::ops;
 use pyo3::prelude::*;
+use std::ops;
 
 // useful for defining python operators
 #[derive(FromPyObject)]
 enum Vec3OrF64 {
     Vec3(Vec3),
-    F64(f64)
+    F64(f64),
 }
 
 #[pyclass(from_py_object)]
@@ -23,19 +23,15 @@ pub struct Vec3 {
 impl Vec3 {
     #[new]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Self {
-            x: x,
-            y: y,
-            z: z
-        }
+        Self { x: x, y: y, z: z }
     }
-    
+
     #[staticmethod]
     pub fn cofm1() -> Self {
         Self {
             x: 0.0,
             y: 0.0,
-            z: 0.0
+            z: 0.0,
         }
     }
 
@@ -44,7 +40,7 @@ impl Vec3 {
         Self {
             x: 1.0,
             y: 0.0,
-            z: 0.0
+            z: 0.0,
         }
     }
 
@@ -68,7 +64,7 @@ impl Vec3 {
         Self {
             x: self.x / norm,
             y: self.y / norm,
-            z: self.z / norm
+            z: self.z / norm,
         }
     }
 
@@ -93,14 +89,14 @@ impl Vec3 {
 
     // Returns the dot product of two vectors
     pub fn dot(&self, other: &Vec3) -> f64 {
-        self.x*other.x + self.y*other.y + self.z*other.z
+        self.x * other.x + self.y * other.y + self.z * other.z
     }
 
     // Returns the cross product of two vectors
     pub fn cross(&self, other: &Vec3) -> Vec3 {
-        let temp_x = self.y*other.z - self.z*other.y;
-        let temp_y = self.z*other.x - self.x*other.z;
-        let temp_z = self.x*other.y - self.y*other.x;
+        let temp_x = self.y * other.z - self.z * other.y;
+        let temp_y = self.z * other.x - self.x * other.z;
+        let temp_z = self.x * other.y - self.y * other.x;
         Vec3::new(temp_x, temp_y, temp_z)
     }
 
@@ -108,25 +104,25 @@ impl Vec3 {
     fn __add__(&self, other: Vec3OrF64) -> Self {
         match other {
             Vec3OrF64::Vec3(v) => self.clone() + v,
-            Vec3OrF64::F64(f) => self.clone() + f
+            Vec3OrF64::F64(f) => self.clone() + f,
         }
     }
     fn __radd__(&self, other: Vec3OrF64) -> Self {
         match other {
             Vec3OrF64::Vec3(v) => v + self.clone(),
-            Vec3OrF64::F64(f) => f + self.clone()
+            Vec3OrF64::F64(f) => f + self.clone(),
         }
     }
     fn __sub__(&self, other: Vec3OrF64) -> Self {
         match other {
             Vec3OrF64::Vec3(v) => self.clone() - v,
-            Vec3OrF64::F64(f) => self.clone() - f
+            Vec3OrF64::F64(f) => self.clone() - f,
         }
     }
     fn __rsub__(&self, other: Vec3OrF64) -> Self {
         match other {
             Vec3OrF64::Vec3(v) => v - self.clone(),
-            Vec3OrF64::F64(f) => f - self.clone()   
+            Vec3OrF64::F64(f) => f - self.clone(),
         }
     }
     fn __mul__(&self, other: f64) -> Self {
@@ -144,7 +140,6 @@ impl Vec3 {
     fn __neg__(&self) -> Self {
         -self.clone()
     }
-
 }
 
 // in-place multiplication by f64
@@ -191,7 +186,6 @@ impl ops::AddAssign<Vec3> for Vec3 {
         self.z += rhs.z;
     }
 }
-
 
 // in-place subtraction of vector
 impl ops::SubAssign<Vec3> for Vec3 {
@@ -279,7 +273,7 @@ impl ops::Mul<f64> for Vec3 {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self {
-        Self{
+        Self {
             x: self.x * rhs,
             y: self.y * rhs,
             z: self.z * rhs,
@@ -292,7 +286,7 @@ impl ops::Mul<Vec3> for f64 {
     type Output = Vec3;
 
     fn mul(self, rhs: Vec3) -> Vec3 {
-        Vec3{
+        Vec3 {
             x: self * rhs.x,
             y: self * rhs.y,
             z: self * rhs.z,
@@ -305,7 +299,7 @@ impl ops::Div<f64> for Vec3 {
     type Output = Self;
 
     fn div(self, rhs: f64) -> Self {
-        Self{
+        Self {
             x: self.x / rhs,
             y: self.y / rhs,
             z: self.z / rhs,
@@ -318,7 +312,7 @@ impl ops::Div<Vec3> for f64 {
     type Output = Vec3;
 
     fn div(self, rhs: Vec3) -> Vec3 {
-        Vec3{
+        Vec3 {
             x: self / rhs.x,
             y: self / rhs.y,
             z: self / rhs.z,
@@ -331,14 +325,13 @@ impl ops::Neg for Vec3 {
     type Output = Self;
 
     fn neg(self) -> Self {
-        Vec3{
+        Vec3 {
             x: -self.x,
             y: -self.y,
             z: -self.z,
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -355,13 +348,13 @@ mod tests {
     fn unit() {
         let mut v1 = Vec3::new(2.0, 3.0, 6.0);
         v1.unit();
-        assert_eq!(v1, Vec3::new(2.0/7.0, 3.0/7.0, 6.0/7.0));
+        assert_eq!(v1, Vec3::new(2.0 / 7.0, 3.0 / 7.0, 6.0 / 7.0));
     }
 
     #[test]
     fn norm() {
         let v1 = Vec3::new(2.0, 3.0, 6.0);
-        assert_eq!(v1.norm(), Vec3::new(2.0/7.0, 3.0/7.0, 6.0/7.0));
+        assert_eq!(v1.norm(), Vec3::new(2.0 / 7.0, 3.0 / 7.0, 6.0 / 7.0));
     }
 
     #[test]
@@ -390,7 +383,6 @@ mod tests {
         let v2 = Vec3::new(4.0, 9.0, 2.0);
         assert_eq!(v1.cross(&v2), Vec3::new(-15.0, -2.0, 39.0));
     }
-
 
     #[test]
     fn mulassign_f64() {
@@ -433,14 +425,14 @@ mod tests {
     fn add_vec3vec3() {
         let v1 = Vec3::new(3.0, -3.0, 1.0);
         let v2 = Vec3::new(1.0, 2.0, -5.0);
-        assert_eq!(v1+v2, Vec3::new(4.0, -1.0, -4.0));
+        assert_eq!(v1 + v2, Vec3::new(4.0, -1.0, -4.0));
     }
 
     #[test]
     fn sub_vec3vec3() {
         let v1 = Vec3::new(3.0, -3.0, 1.0);
         let v2 = Vec3::new(1.0, 2.0, -5.0);
-        assert_eq!(v1-v2, Vec3::new(2.0, -5.0, 6.0));
+        assert_eq!(v1 - v2, Vec3::new(2.0, -5.0, 6.0));
     }
 
     #[test]
@@ -503,5 +495,4 @@ mod tests {
         let v1 = Vec3::new(3.0, -3.0, 1.0);
         assert_eq!(-v1, Vec3::new(-3.0, 3.0, -1.0));
     }
-
 }

@@ -1,15 +1,14 @@
-use crate::{Vec3, Star};
-use crate::{rpot_val, rpot_grad, ref_sphere, sphere_eclipse_vector, dbrent};
 use crate::errors::RocheError;
+use crate::{Star, Vec3};
+use crate::{dbrent, ref_sphere, rpot_grad, rpot_val, sphere_eclipse_vector};
 use pyo3::prelude::*;
 
-
-/// 
+///
 /// fblink works out whether or not a given point is eclipsed by a Roche-distorted star by searching along the line
 /// of sight to the point to see if the Roche potential ever drops below the value at the stellar surface.
 ///
 /// Arguments:
-/// 
+///
 /// * `q`:      mass ratio = M2/M1
 /// * `star`:   star concerned
 /// * `spin`:   ratio of spin to orbital frequency
@@ -20,21 +19,28 @@ use pyo3::prelude::*;
 /// picky. 1.e-4 would be more than good enough in most cases.
 /// * `earth`:  vector pointing towards earth
 /// * `p`:      point of interest
-/// 
+///
 /// Returns:
-/// 
+///
 /// * true if minimum potential is below the potential at stellar surface
 ///
 #[pyfunction]
-pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, p: &Vec3) -> Result<bool, RocheError> {
-
+pub fn fblink(
+    q: f64,
+    star: Star,
+    spin: f64,
+    ffac: f64,
+    acc: f64,
+    earth: &Vec3,
+    p: &Vec3,
+) -> Result<bool, RocheError> {
     let (rref, pref) = ref_sphere(q, star, spin, ffac)?;
 
     let cofm: Vec3 = match star {
         Star::Primary => Vec3::cofm1(),
         Star::Secondary => Vec3::cofm2(),
     };
-    
+
     // First compute the multipliers cutting the reference sphere (if any)
     let mut lam1 = 0.0;
     let mut lam2 = 0.0;
@@ -46,9 +52,7 @@ pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, 
     }
 
     // Create function objects for 1D minimisation in lambda direction
-    let func = |lam: f64| {
-        Ok(rpot_val(q, star, spin, earth, p, lam)?)
-    };
+    let func = |lam: f64| Ok(rpot_val(q, star, spin, earth, p, lam)?);
 
     // Now try to bracket a minimum. We just crudely compute function at regularly spaced intervals filling in the
     // gaps until the step size between the points drops below the threshold. Take every opportunity to jump out early
@@ -62,11 +66,9 @@ pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, 
     let mut lam: f64 = lam1;
 
     while step > acc {
-
-        lam = lam1 + step/2.0;
+        lam = lam1 + step / 2.0;
 
         for _ in 0..nstep {
-
             flam = func(lam)?;
             if flam <= pref {
                 return Ok(true);
@@ -92,7 +94,6 @@ pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, 
     }
 
     if flam < f1 && flam < f2 {
-
         // OK, minimum bracketted, so finally pin it down accurately
         // Possible that multiple minima could cause problems but I have
         // never seen this in practice.
@@ -106,7 +107,7 @@ pub fn fblink(q: f64, star: Star, spin: f64, ffac: f64, acc: f64, earth: &Vec3, 
 
         Ok(flam < pref)
     } else {
-        // Not bracketted even after a detailed search, and we have not jumped 
+        // Not bracketted even after a detailed search, and we have not jumped
         // out either, so assume no eclipse
         Ok(false)
     }

@@ -1,37 +1,41 @@
-use pyo3::prelude::*;
-use std::f64::consts::{TAU, FRAC_PI_2};
-use crate::{Star, Vec3, ingress_egress, brightspot_position};
 use crate::errors::RocheError;
+use crate::{Star, Vec3, brightspot_position, ingress_egress};
 use crate::{fblink, set_earth_iangle, x_l1};
-
+use pyo3::prelude::*;
+use std::f64::consts::{FRAC_PI_2, TAU};
 
 ///
 /// phi3, phi4 = wdphases(q, iangle, r1, r2=-1, ntheta=200)
-/// 
+///
 /// Returns the third and fourth contact phases of the white dwarf.
-/// 
+///
 /// q      -- mass ratio = M2/M1
 /// iangle -- orbital inclination, degrees
 /// r1     -- scaled white dwarf radius = R1/a
 /// r2     -- scaled secondary radius, < 0 for Roche lobe filling
 /// ntheta -- number of angles to compute at the limb of white dwarf.
 ///           (used over quadrants)
-/// 
+///
 /// The routine searches points equally-spaced at quadrants of the limb
 /// of the white dwarf to determine the contact phases. It will fail if
 /// there is no eclipse at all by raising a RocheError. For partial eclipses
 /// there will be a valid 'fourth' contact (marking the end of eclipse still)
 /// but the third contact will be set = -1.
-/// 
+///
 #[pyfunction]
 #[pyo3(signature = (q, iangle, r1, r2=-1.0, ntheta=200))]
-pub fn wdphases(q: f64, iangle: f64, r1: f64, r2: f64, ntheta: i32) -> Result<(f64, f64), RocheError> {
-
+pub fn wdphases(
+    q: f64,
+    iangle: f64,
+    r1: f64,
+    r2: f64,
+    ntheta: i32,
+) -> Result<(f64, f64), RocheError> {
     let ffac: f64;
-    if r2 <= 0.0{
+    if r2 <= 0.0 {
         ffac = 1.0;
     } else {
-        ffac = r2/(1.0-x_l1(q)?);
+        ffac = r2 / (1.0 - x_l1(q)?);
     }
     // fourth contact
     let mut phi4lo: f64 = 0.0;
@@ -39,14 +43,12 @@ pub fn wdphases(q: f64, iangle: f64, r1: f64, r2: f64, ntheta: i32) -> Result<(f
     let mut phi4: f64 = 0.0;
 
     if !eclipsed_4(q, iangle, phi4lo, r1, ffac, ntheta)? {
-        let message = format!(
-            "no eclipse at all for q={}, i={}, r1={}", q, iangle, r1
-        );
-        return Err(RocheError::WdphasesError(message))
+        let message = format!("no eclipse at all for q={}, i={}, r1={}", q, iangle, r1);
+        return Err(RocheError::WdphasesError(message));
     }
 
-    while phi4hi - phi4lo > r1/(ntheta as f64)/10.0 {
-        phi4 = (phi4lo + phi4hi)/2.0;
+    while phi4hi - phi4lo > r1 / (ntheta as f64) / 10.0 {
+        phi4 = (phi4lo + phi4hi) / 2.0;
         if eclipsed_4(q, iangle, phi4, r1, ffac, ntheta)? {
             phi4lo = phi4;
         } else {
@@ -63,8 +65,8 @@ pub fn wdphases(q: f64, iangle: f64, r1: f64, r2: f64, ntheta: i32) -> Result<(f
         return Ok((-1.0, phi4));
     }
 
-    while phi3hi - phi3lo > r1/(ntheta as f64)/10.0 {
-        phi3 = (phi3lo + phi3hi)/2.0;
+    while phi3hi - phi3lo > r1 / (ntheta as f64) / 10.0 {
+        phi3 = (phi3lo + phi3hi) / 2.0;
         if uneclipsed_3(q, iangle, phi3, r1, ffac, ntheta)? {
             phi3hi = phi3;
         } else {
@@ -73,11 +75,7 @@ pub fn wdphases(q: f64, iangle: f64, r1: f64, r2: f64, ntheta: i32) -> Result<(f
     }
 
     Ok((phi3, phi4))
-
 }
-
-
-
 
 ///
 /// Returns x, y vectors which define the projected limb of white dwarf
@@ -85,56 +83,44 @@ pub fn wdphases(q: f64, iangle: f64, r1: f64, r2: f64, ntheta: i32) -> Result<(f
 ///
 fn xyv(iangle: f64, r1: f64, phase: f64) -> (Vec3, Vec3) {
     let (sinp, cosp) = (TAU * phase).sin_cos();
-    let x = Vec3::new(-r1*sinp, r1*cosp, 0.0);
+    let x = Vec3::new(-r1 * sinp, r1 * cosp, 0.0);
     let iangle_radians = iangle.to_radians();
     let (sini, cosi) = iangle_radians.sin_cos();
-    let y = Vec3::new(-r1*cosi*cosp, -r1*cosi*sinp, r1*sini);
+    let y = Vec3::new(-r1 * cosi * cosp, -r1 * cosi * sinp, r1 * sini);
     (x, y)
 }
-
 
 ///
 /// Says whether any of the upper-left quadrant of the WD is uneclipsed at
 /// phase = phase 'any' means all of the ntheta points computed uniformly
 /// around the quadrant. This can be used to define the 3rd contact
 ///
-fn uneclipsed_3(q: f64, iangle: f64, phase: f64, r1: f64, ffac: f64, ntheta: i32) -> Result<bool, RocheError> {
-
+fn uneclipsed_3(
+    q: f64,
+    iangle: f64,
+    phase: f64,
+    r1: f64,
+    ffac: f64,
+    ntheta: i32,
+) -> Result<bool, RocheError> {
     let (x, y) = xyv(iangle, r1, phase);
     let mut theta: f64;
     let mut v: Vec3;
     let mut sint: f64;
     let mut cost: f64;
     for i in 0..ntheta {
-        theta = FRAC_PI_2 * (i as f64 /(ntheta as f64 - 1.0));
+        theta = FRAC_PI_2 * (i as f64 / (ntheta as f64 - 1.0));
         (sint, cost) = theta.sin_cos();
-        v = -x*cost + y*sint;
-        if !fblink(q, Star::Secondary, 1.0, ffac, 1.0e-5, &set_earth_iangle(iangle, phase), &v)? {
-            return Ok(true);
-        }
-    }
-
-    Ok(false)   
-}
-
-
-/// 
-/// Says whether any of lower-right quadrant of the WD is eclipsed at
-/// phase = phase 'Any' means any of ntheta points computed uniformly around the quadrant.
-/// This can be used to define the 4th contact
-/// 
-fn eclipsed_4(q: f64, iangle: f64, phase: f64, r1: f64, ffac: f64, ntheta: i32) -> Result<bool, RocheError> {
-
-    let (x, y) = xyv(iangle, r1, phase);
-    let mut theta: f64;
-    let mut v: Vec3;
-    let mut sint: f64;
-    let mut cost: f64;
-    for i in 0..ntheta {
-        theta = FRAC_PI_2 * (i as f64 /(ntheta as f64 - 1.0));
-        (sint, cost) = theta.sin_cos();
-        v = x*cost - y*sint;
-        if fblink(q, Star::Secondary, 1.0, ffac, 1.0e-5, &set_earth_iangle(iangle, phase), &v)? {
+        v = -x * cost + y * sint;
+        if !fblink(
+            q,
+            Star::Secondary,
+            1.0,
+            ffac,
+            1.0e-5,
+            &set_earth_iangle(iangle, phase),
+            &v,
+        )? {
             return Ok(true);
         }
     }
@@ -142,21 +128,68 @@ fn eclipsed_4(q: f64, iangle: f64, phase: f64, r1: f64, ffac: f64, ntheta: i32) 
     Ok(false)
 }
 
+///
+/// Says whether any of lower-right quadrant of the WD is eclipsed at
+/// phase = phase 'Any' means any of ntheta points computed uniformly around the quadrant.
+/// This can be used to define the 4th contact
+///
+fn eclipsed_4(
+    q: f64,
+    iangle: f64,
+    phase: f64,
+    r1: f64,
+    ffac: f64,
+    ntheta: i32,
+) -> Result<bool, RocheError> {
+    let (x, y) = xyv(iangle, r1, phase);
+    let mut theta: f64;
+    let mut v: Vec3;
+    let mut sint: f64;
+    let mut cost: f64;
+    for i in 0..ntheta {
+        theta = FRAC_PI_2 * (i as f64 / (ntheta as f64 - 1.0));
+        (sint, cost) = theta.sin_cos();
+        v = x * cost - y * sint;
+        if fblink(
+            q,
+            Star::Secondary,
+            1.0,
+            ffac,
+            1.0e-5,
+            &set_earth_iangle(iangle, phase),
+            &v,
+        )? {
+            return Ok(true);
+        }
+    }
+
+    Ok(false)
+}
 
 #[pyfunction]
 // #[pyo3(signature = (q, iangle, rbs))]
 pub fn bsphases(q: f64, iangle: f64, rbs: f64) -> Result<(f64, f64), RocheError> {
-
     let r = brightspot_position(q, rbs, 1.0e-7, 1.0e-2)?;
     let mut ingress: f64 = 0.0;
     let mut egress: f64 = 0.0;
-    let eclipse = ingress_egress(q, Star::Secondary, 1.0, 1.0, iangle, 1.0e-7, &r, &mut ingress, &mut egress)?;
+    let eclipse = ingress_egress(
+        q,
+        Star::Secondary,
+        1.0,
+        1.0,
+        iangle,
+        1.0e-7,
+        &r,
+        &mut ingress,
+        &mut egress,
+    )?;
     if !eclipse {
-        return Err(RocheError::WdphasesError("point is not eclipsed".to_string()));
+        return Err(RocheError::WdphasesError(
+            "point is not eclipsed".to_string(),
+        ));
     }
-    Ok((ingress-1.0, egress-1.0))
+    Ok((ingress - 1.0, egress - 1.0))
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -165,9 +198,18 @@ mod tests {
     #[test]
     fn wdphases_test() -> Result<(), RocheError> {
         // Values from trm.roche.wdphases
-        assert_eq!(wdphases(0.2, 90.0, 0.015, 0.20, 200)?, (0.027637481689453125, 0.032169342041015625));
-        assert_eq!(wdphases(0.2, 85.0, 0.015, 0.20, 200)?, (0.023677825927734375, 0.029010772705078125));
-        assert_eq!(wdphases(0.2, 80.0, 0.015, 0.20, 200)?, (-1.0, 0.015842437744140625));
+        assert_eq!(
+            wdphases(0.2, 90.0, 0.015, 0.20, 200)?,
+            (0.027637481689453125, 0.032169342041015625)
+        );
+        assert_eq!(
+            wdphases(0.2, 85.0, 0.015, 0.20, 200)?,
+            (0.023677825927734375, 0.029010772705078125)
+        );
+        assert_eq!(
+            wdphases(0.2, 80.0, 0.015, 0.20, 200)?,
+            (-1.0, 0.015842437744140625)
+        );
         assert!(wdphases(0.2, 60.0, 0.015, 0.20, 200).is_err());
         Ok(())
     }
@@ -186,5 +228,4 @@ mod tests {
         assert!(bsphases(0.2, 60.0, 0.2).is_err());
         Ok(())
     }
-
 }

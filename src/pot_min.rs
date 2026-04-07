@@ -1,8 +1,7 @@
-use std::f64::consts::TAU;
 use crate::errors::RocheError;
-use crate::{Vec3, Star};
+use crate::{Star, Vec3};
 use crate::{rpot_grad, rpot_val, set_earth};
-
+use std::f64::consts::TAU;
 
 ///
 ///  linmin minimises along a line in phase, lambda space. It returns at the
@@ -10,7 +9,7 @@ use crate::{rpot_grad, rpot_val, set_earth};
 /// assumed that the potential is dropping with x at the starting point.
 ///
 /// Arguments:
-/// 
+///
 /// * `q`: mass ratio = M2/M1
 /// * `star`: star in question
 /// * `spin`: spin to orbital frequency ratio
@@ -27,18 +26,33 @@ use crate::{rpot_grad, rpot_val, set_earth};
 /// * `lam2`: maximum lambda
 /// * `pref`: reference potential.
 /// * `acc`: accuracy in position
-/// 
+///
 /// Returns:
-/// 
+///
 /// * `pmin`: value of function at minimum
 /// * `jammed`: true if minimum is on a boundary
-/// 
-pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi: &mut f64, lam: &mut f64, mut dphi: f64, mut dlam: f64, phi1: f64, phi2: f64, lam1: f64, lam2: f64, pref: f64, acc: f64) -> Result<(f64, bool), RocheError> {
-
+///
+pub fn linmin(
+    q: f64,
+    star: Star,
+    spin: f64,
+    cosi: f64,
+    sini: f64,
+    p: &Vec3,
+    phi: &mut f64,
+    lam: &mut f64,
+    mut dphi: f64,
+    mut dlam: f64,
+    phi1: f64,
+    phi2: f64,
+    lam1: f64,
+    lam2: f64,
+    pref: f64,
+    acc: f64,
+) -> Result<(f64, bool), RocheError> {
     let mut jammed = false;
 
     let make_func = |phi0: f64, lam0: f64, dphi0: f64, dlam0: f64| {
-        
         let func = move |x: f64| {
             let earth: Vec3 = set_earth(cosi, sini, phi0 + dphi0 * x);
             Ok(rpot_val(q, star, spin, &earth, p, lam0 + dlam0 * x)?)
@@ -115,7 +129,7 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
     // to find other side starting from xb, looking for a point when
     // we go up or dip below the critical potential
     let mut bracketted = false;
-    
+
     let mut xc: f64 = 0.0;
     let mut fc: f64 = 0.0;
 
@@ -150,11 +164,9 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
 
     // --- boundary logic ---
     if !bracketted {
-
         let dc: f64 = dfunc(xc)?;
 
         if dc > 0.0 {
-
             // We have crashed into the end stop without crossing the minimum
             // but the derivative says that we are going up. Damn!  Go back to
             // old xb and check that derivative was going down there it really
@@ -162,12 +174,11 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
             xb = xbold;
             let db: f64 = dfunc(xb)?;
             if db < 0.0 {
-
                 // OK, let's try to zero in on the point at which the derivative
                 // switches sign.
-                let mut xm: f64 = (xb+xc)/2.0;
-                while (xc-xb) > 1.0e-8*xc {
-                    xm = (xb+xc)/2.0;
+                let mut xm: f64 = (xb + xc) / 2.0;
+                while (xc - xb) > 1.0e-8 * xc {
+                    xm = (xb + xc) / 2.0;
                     if dfunc(xm)? > 0.0 {
                         xc = xm;
                     } else {
@@ -176,23 +187,27 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
                 }
                 let fm: f64 = func(xm)?;
                 if fm <= pref {
-                    *phi += dphi*xm;
-                    *lam += dlam*xm;
+                    *phi += dphi * xm;
+                    *lam += dlam * xm;
                     return Ok((fm, jammed));
                 }
                 if fm < fc && fm < fbold {
                     xb = xm;
                 } else {
-                    return Err(RocheError::LinminError("Failed to bracket minimum, error 3.".to_string()))
+                    return Err(RocheError::LinminError(
+                        "Failed to bracket minimum, error 3.".to_string(),
+                    ));
                 }
             } else {
-                return Err(RocheError::LinminError("Failed to bracket minimum, error 1.".to_string()))
+                return Err(RocheError::LinminError(
+                    "Failed to bracket minimum, error 1.".to_string(),
+                ));
             }
         } else {
             // We are trapped on a boundary; re-define line minimisation functions.
             jammed = true;
-            *phi += dphi*xmax;
-            *lam += dlam*xmax;
+            *phi += dphi * xmax;
+            *lam += dlam * xmax;
             xmax = 1.0;
             (dphi, dlam) = rpot_grad(q, star, spin, &set_earth(cosi, sini, *phi), p, *lam)?;
 
@@ -248,8 +263,8 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
                 fb = func(xb)?;
             }
             if fb <= pref {
-                *phi += dphi*xb;
-                *lam += dlam*xb;
+                *phi += dphi * xb;
+                *lam += dlam * xb;
                 return Ok((fb, jammed));
             }
             if fb >= fa {
@@ -259,12 +274,12 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
             // Now the bracketting steps.
             bracketted = false;
             for n in 1..=NTRY {
-                xc = xmax*n as f64/NTRY as f64;
+                xc = xmax * n as f64 / NTRY as f64;
                 fc = func(xc)?;
                 if fc <= pref {
-                    *phi += dphi*xc;
-                    *lam += dlam*xc;
-                    return Ok((fc, jammed))
+                    *phi += dphi * xc;
+                    *lam += dlam * xc;
+                    return Ok((fc, jammed));
                 } else {
                     bracketted = true;
                     break;
@@ -272,23 +287,22 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
             }
 
             if !bracketted {
-
                 if dfunc(xc)? > 0.0 {
-                    return Err(RocheError::LinminError("Failed to bracket minimum, error 2.".to_string()))
+                    return Err(RocheError::LinminError(
+                        "Failed to bracket minimum, error 2.".to_string(),
+                    ));
                 } else {
-                    *phi += dphi*xmax;
-                    *lam += dlam*xmax;
+                    *phi += dphi * xmax;
+                    *lam += dlam * xmax;
                     return Ok((fc, jammed));
                 }
             }
-
         }
-
     }
 
     // --- Brent refinement ---
 
-    let xacc: f64 = acc / ((TAU*dphi).powi(2) + dlam*dlam).sqrt();
+    let xacc: f64 = acc / ((TAU * dphi).powi(2) + dlam * dlam).sqrt();
 
     let (xmin, pmin) = dbrent(xa, xb, xc, &func, &dfunc, xacc, true, pref)?;
 
@@ -298,8 +312,7 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
     Ok((pmin, jammed))
 }
 
-
-/// 
+///
 /// The line of sight to any fixed point in a binary sweeps out a cone at the
 /// binary rotates. Positions on the cone can be parameterised by the orbital
 /// phase phi and the multiplier ('lambda') needed to get from the fixed point.
@@ -311,7 +324,7 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
 /// sphere.
 ///
 /// Arguments:
-/// 
+///
 /// * `q`:  mass ratio = M2/M1.
 /// * `cosi`: cosine orbital inclination.
 /// * `sini`: sine orbital inclination.
@@ -328,27 +341,42 @@ pub fn linmin(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi
 /// * `phi`:  phi at minimum potential. Ingress occurs between phi1 and phi.
 ///           if there is an eclipse. Egress occurs between phi and phi2.
 /// * `lam`:  lambda at minimum potential.
-/// 
+///
 /// Returns:
-/// 
+///
 /// * true if minimum potential is below the reference.
 ///
-pub fn pot_min(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, phi1: f64, phi2: f64, lam1: f64, lam2: f64, rref: f64, pref: f64, acc: f64, phi: &mut f64, lam: &mut f64) -> Result<bool, RocheError> {
-
-    *phi = (phi1 + phi2)/2.;
-    *lam = (lam1 + lam2)/2.;
+pub fn pot_min(
+    q: f64,
+    star: Star,
+    spin: f64,
+    cosi: f64,
+    sini: f64,
+    p: &Vec3,
+    phi1: f64,
+    phi2: f64,
+    lam1: f64,
+    lam2: f64,
+    rref: f64,
+    pref: f64,
+    acc: f64,
+    phi: &mut f64,
+    lam: &mut f64,
+) -> Result<bool, RocheError> {
+    *phi = (phi1 + phi2) / 2.;
+    *lam = (lam1 + lam2) / 2.;
 
     let mut rp: f64 = TAU * *phi;
     let (sinp, cosp) = rp.sin_cos();
 
-    let mut earth: Vec3 = Vec3::new(sini*cosp, -sini*sinp, cosi);
+    let mut earth: Vec3 = Vec3::new(sini * cosp, -sini * sinp, cosi);
     let mut pot: f64;
     let mut dphi: f64;
     let mut dlam: f64;
     pot = rpot_val(q, star, spin, &earth, p, *lam)?;
     (dphi, dlam) = rpot_grad(q, star, spin, &earth, p, *lam)?;
     if pot <= pref {
-        return Ok(true)
+        return Ok(true);
     };
 
     let mut gdphi: f64 = -dphi;
@@ -360,56 +388,55 @@ pub fn pot_min(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, ph
 
     const ITMAX: i32 = 200;
 
-    let delphi: f64 = q/(1.0 + q)*((acc*acc)/(rref*rref))/2.0;
+    let delphi: f64 = q / (1.0 + q) * ((acc * acc) / (rref * rref)) / 2.0;
     let mut pmin: f64;
     let mut gam: f64;
     let mut dgg: f64;
     let mut gg: f64;
     let mut jammed: bool;
     for _ in 0..ITMAX {
-
-        (pmin, jammed) = linmin(q, star, spin, cosi, sini, p, phi, lam, dphi, dlam, phi1, phi2, lam1, lam2, pref, acc)?;
+        (pmin, jammed) = linmin(
+            q, star, spin, cosi, sini, p, phi, lam, dphi, dlam, phi1, phi2, lam1, lam2, pref, acc,
+        )?;
 
         if pmin <= pref {
-            return Ok(true)
+            return Ok(true);
         }
         if jammed || (pmin - pot).abs() < delphi {
-            return Ok(false)
+            return Ok(false);
         }
 
         pot = pmin;
         rp = TAU * *phi;
         let (sinp, cosp) = rp.sin_cos();
-        earth.set(sini*cosp, -sini*sinp, cosi);
+        earth.set(sini * cosp, -sini * sinp, cosi);
         (dphi, dlam) = rpot_grad(q, star, spin, &earth, p, *lam)?;
 
-        gg = gdphi*gdphi + gdlam*gdlam;
+        gg = gdphi * gdphi + gdlam * gdlam;
         if gg == 0. {
-            return Ok(false)
+            return Ok(false);
         }
 
-        dgg = (dphi+gdphi)*dphi + (dlam+gdlam)*dlam;
-        gam = dgg/gg;
+        dgg = (dphi + gdphi) * dphi + (dlam + gdlam) * dlam;
+        gam = dgg / gg;
 
         gdphi = -dphi;
         gdlam = -dlam;
-        dphi = gdphi + gam*hdphi;
-        hdphi = gdphi + gam*hdphi;
-        dlam = gdlam + gam*hdlam;
-        hdlam = gdlam + gam*hdlam;
-
+        dphi = gdphi + gam * hdphi;
+        hdphi = gdphi + gam * hdphi;
+        dlam = gdlam + gam * hdlam;
+        hdlam = gdlam + gam * hdlam;
     }
     Err(RocheError::PotminError("Too many iterations.".to_string()))
 }
 
-
-/// 
-/// Given a bracketted minimum, this routine refines the minimum, making use of derivatives. 
-/// It comes from NR, with the added option of a quick bail out. ax to cx must bracket a 
+///
+/// Given a bracketted minimum, this routine refines the minimum, making use of derivatives.
+/// It comes from NR, with the added option of a quick bail out. ax to cx must bracket a
 /// minimum otherwise you will be in trouble.
-/// 
+///
 /// Arguments:
-/// 
+///
 /// * `ax`: one extreme of x.
 /// * `bx`: mid x value.
 /// * `cx`: other extreme x value.
@@ -418,9 +445,9 @@ pub fn pot_min(q: f64, star: Star, spin: f64, cosi: f64, sini: f64, p: &Vec3, ph
 /// * `acc`: (absolute) accuracy in x.
 /// * `stopfast`: retrun as soon as function value goes below a reference value or not.
 /// * `fref`: reference function value if stopfast = true.
-/// 
+///
 /// Returns:
-/// 
+///
 /// * x at minimum.
 /// * function value at minimum.
 ///
@@ -463,7 +490,6 @@ where
     let mut d: f64 = 0.0;
 
     for _ in 0..ITMAX {
-
         let xm: f64 = 0.5 * (a + b);
         let tol1: f64 = acc;
         let tol2: f64 = 2.0 * tol1;
@@ -476,7 +502,6 @@ where
         let mut d2: f64;
 
         if e.abs() > tol1 {
-
             d1 = 2.0 * (b - a);
             d2 = d1;
 
@@ -498,7 +523,6 @@ where
             e = d;
 
             if ok1 || ok2 {
-
                 d = if ok1 && ok2 {
                     if d1.abs() < d2.abs() { d1 } else { d2 }
                 } else if ok1 {
@@ -508,46 +532,35 @@ where
                 };
 
                 if d.abs() <= 0.5 * olde.abs() {
-
                     let u: f64 = x + d;
 
                     if (u - a) < tol2 || (b - u) < tol2 {
                         d = tol1.copysign(xm - x);
                     }
-
                 } else {
                     e = if dx >= 0.0 { a - x } else { b - x };
                     d = 0.5 * e;
                 }
-
             } else {
-
                 e = if dx >= 0.0 { a - x } else { b - x };
                 d = 0.5 * e;
-
             }
-
         } else {
-
             e = if dx >= 0.0 { a - x } else { b - x };
             d = 0.5 * e;
-
         }
 
         let u: f64;
         let fu: f64;
 
         if d.abs() >= tol1 {
-
             u = x + d;
             fu = func(u)?;
 
             if stopfast && fu < fref {
                 return Ok((u, fu));
             }
-
         } else {
-
             u = x + tol1.copysign(d);
             fu = func(u)?;
 
@@ -563,30 +576,42 @@ where
         let du: f64 = dfunc(u)?;
 
         if fu <= fx {
+            if u >= x {
+                a = x
+            } else {
+                b = x
+            };
 
-            if u >= x { a = x } else { b = x };
-
-            v = w; fv = fw; dv = dw;
-            w = x; fw = fx; dw = dx;
-            x = u; fx = fu; dx = du;
-
+            v = w;
+            fv = fw;
+            dv = dw;
+            w = x;
+            fw = fx;
+            dw = dx;
+            x = u;
+            fx = fu;
+            dx = du;
         } else {
-
-            if u < x { a = u } else { b = u };
+            if u < x {
+                a = u
+            } else {
+                b = u
+            };
 
             if fu <= fw || w == x {
-
-                v = w; fv = fw; dv = dw;
-                w = u; fw = fu; dw = du;
-
+                v = w;
+                fv = fw;
+                dv = dw;
+                w = u;
+                fw = fu;
+                dw = du;
             } else if fu < fv || v == x || v == w {
-
-                v = u; fv = fu; dv = du;
-
+                v = u;
+                fv = fu;
+                dv = du;
             }
         }
     }
 
-    return Err(RocheError::DbrentError("too many iterations.".to_string()))
+    return Err(RocheError::DbrentError("too many iterations.".to_string()));
 }
-
