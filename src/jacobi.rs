@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use crate::Vec3;
 
+
 ///
 /// returns the Jacobi constant corresponding to a particular
 /// position and velocity.
@@ -28,6 +29,7 @@ pub fn jacobi(q: f64, r: &Vec3, v: &Vec3) -> f64 {
         -f2/((r.x - 1.0).powi(2) + yz_sqr).sqrt();
     jac
 }
+
 
 #[cfg(test)]
 mod tests {
