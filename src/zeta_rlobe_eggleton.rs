@@ -54,3 +54,25 @@ pub fn dzetadq_rlobe_eggleton(q: f64) -> Result<f64, RocheError> {
     let numer = 2.*loneq - q1/opq1;
     Ok(numer/denom/3. + (1. + q)/3.*((1. + 2.*q1)/3./(q1*opq1).powi(2) - numer*(0.4/q1 + 1./(3.*q2*(1. + q1)))/denom)/denom)
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn zeta_rlobe_eggleton_test() -> Result<(), RocheError> {
+        // Values from trm.roche.zeta_rlobe_eggleton
+        assert_eq!(zeta_rlobe_eggleton(0.2)?, 2.3365106916200284);
+        assert!(zeta_rlobe_eggleton(-0.2).is_err());
+        Ok(())
+    }
+
+        #[test]
+    fn dzetadq_rlobe_eggleton_test() -> Result<(), RocheError> {
+        // Values from trm.roche.zeta_rlobe_eggleton
+        assert_eq!(dzetadq_rlobe_eggleton(0.2)?, 0.135112859605613);
+        assert!(dzetadq_rlobe_eggleton(-0.2).is_err());
+        Ok(())
+    }
+}
