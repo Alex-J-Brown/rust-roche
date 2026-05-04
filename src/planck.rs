@@ -1,3 +1,5 @@
+use pyo3::prelude::*;
+
 // Speed of light, MKS, (exact value)
 pub const C: f64 = 2.99792458e8;
 
@@ -16,6 +18,7 @@ pub const K: f64 = 1.3806e-23;
 /// * `wave`: wavelength in nanometres
 /// * `temp`: temperature in K
 ///
+#[pyfunction]
 pub fn planck(wave: f64, temp: f64) -> f64 {
     let fac1: f64 = 2.0e27 * H * C;
     let fac2: f64 = 1.0e9 * H * C / K;
@@ -37,6 +40,7 @@ pub fn planck(wave: f64, temp: f64) -> f64 {
 /// * `wave`: wavelength in nanometres
 /// * `temp`: temperature in K
 ///
+#[pyfunction]
 pub fn dplanck(wave: f64, temp: f64) -> f64 {
     let fac2: f64 = 1.0e9 * H * C / K;
 
@@ -52,7 +56,7 @@ pub fn dplanck(wave: f64, temp: f64) -> f64 {
 ///
 /// * `wave`: wavelength in nanometres
 /// * `temp`: temperature in K
-///
+#[pyfunction]
 pub fn dlpdlt(wave: f64, temp: f64) -> f64 {
     let fac2: f64 = 1.0e9 * H * C / K;
 

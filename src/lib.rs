@@ -136,5 +136,8 @@ fn roche(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(phases::wdphases, m)?)?;
     m.add_function(wrap_pyfunction!(phases::bsphases, m)?)?;
     m.add_function(wrap_pyfunction!(jacobi::jacobi, m)?)?;
+    m.add_function(wrap_pyfunction!(planck::planck, m)?)?;
+    m.add_function(wrap_pyfunction!(planck::dplanck, m)?)?;
+    m.add_function(wrap_pyfunction!(planck::dlpdlt, m)?)?;
     Ok(())
 }
