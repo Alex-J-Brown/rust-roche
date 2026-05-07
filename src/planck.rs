@@ -20,14 +20,19 @@ pub const K: f64 = 1.3806e-23;
 ///
 #[pyfunction]
 pub fn planck(wave: f64, temp: f64) -> f64 {
-    let fac1: f64 = 2.0e27 * H * C;
-    let fac2: f64 = 1.0e9 * H * C / K;
+    //
+    // Uses Planck function in B-lambda form.
+    // Returns specific intensity per unit wavelength of a blackbody
+    // Units: W / m**3 / sr  (Wavelength converted to meters for mks unit system)
+    //
+    let lambda: f64 = wave * 1e-9;
+    let x: f64 = (H * C) / (lambda * K * temp);
+    let prefactor: f64 = (2.0 * H * C * C) / lambda.powi(5);
 
-    let exponent: f64 = fac2 / (wave * temp);
-    if exponent > 40.0 {
-        fac1 * ((-exponent).exp()) / (wave * wave * wave)
+    if x > 40.0 {
+        prefactor * (-x).exp()
     } else {
-        fac1 / exponent.exp_m1() / (wave * wave * wave)
+        prefactor / (x.exp() - 1.0)
     }
 }
 
@@ -42,10 +47,13 @@ pub fn planck(wave: f64, temp: f64) -> f64 {
 ///
 #[pyfunction]
 pub fn dplanck(wave: f64, temp: f64) -> f64 {
-    let fac2: f64 = 1.0e9 * H * C / K;
+    //
+    // Derivative of B-lambda wrt lambda.
+    //
+    let lambda: f64 = wave * 1e-9;
+    let x: f64 = H * C / (lambda * K * temp);
 
-    let exponent: f64 = fac2 / (wave * temp);
-    exponent / (1.0 - -exponent.exp()) - 3.0
+    x / (1.0 - (-x).exp()) - 5.0
 }
 
 ///
